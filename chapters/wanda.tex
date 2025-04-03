@@ -1,0 +1,6 @@
+\section{Idea behind WANDA}
+% WANDA we also opted for 2048 seqlen, float32 precision and 128 samples
+We also experimented with different configurations, by increasing the sequence length as well as the precision of the number of samples and the precision. 
+However, the result were disappointing to say the least: the execution time became exponentially longer, and the model became quite larger in memory size (\approx 4.8 GB compared to the \approx2.5 GB of the initial model)
+ without showing any apparent benefit. In particular, preliminary results showed performance similar to the lighter configuration of parameters, which includes the frequent
+ tendency to repeat keywords and part of phrases after a certain amount of tokens.
