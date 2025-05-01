@@ -22,14 +22,8 @@ Ogni componente dell'infrastruttura sfrutta lo stack in modo diverso per svolger
 \\ Ad esempio, consideriamo un servizio che richiede di stabilire se un utente possiede dei determinati diritti di accesso.
 OPA permette di gestire il problema decisionale del controllo degli accessi analizzando le informazioni ricevute attraverso un'interrogazione da parte del servizio. 
 In questo modo, l'applicazione delle politiche di accesso viene delegata a un componente singolo, che potrà essere interrogato da più 
-entità.
-\begin{figure}[h]
-    \includegraphics[height=6cm]{opa-service.jpg}
-    \centering
-    \caption[Meccanismo di operazione di OPA]{Meccanismo di operazione di OpenPolicyAgent. Si analizza la query proveniente da un servizio, e in base alle politiche e ai dati a sua disposizione, formula una decisione da inviare al mittente. }
-    \label{OPAWork}
-\end{figure} 
-\\ Il principale vantaggio di una struttura di questo tipo consiste nell'eliminazione di eventuali ambiguità
+entità. \\
+Il principale vantaggio di una struttura di questo tipo consiste nell'eliminazione di eventuali ambiguità
  causate dall'implementazione del controllo degli accessi in ciascun elemento del sistema. 
 \\La Figura \ref*{OPAWork} mostra in modo schematico la gestione tipica di una richiesta: un servizio invia un'interrogazione
  a OPA che in base ai dati a sua disposizione formula una decisione e la restituisce al servizio stesso. 

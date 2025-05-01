@@ -1,59 +1,23 @@
-\textit{Autenticazione} e \textit{autorizzazione} rappresentano due concetti fondamentali nell'ambito della
- sicurezza informatica.
- \\ Con autenticazione si intende l'atto di confermare l'identità di un utente. 
- L'autorizzazione, invece, indica la funzione che specifica i privilegi di accesso a determinate risorse o servizi.
-\\I due processi sono interamente interconnessi: l'autorizzazione fa uso dei dati provenienti 
-dall'autenticazione e in base a questi stabilisce i 
-permessi che un'entità possiede.
-\\In informatica, l'autorizzazione si basa sulle \textit{politiche di accesso} (o policy), che vengono utilizzate per determinare se 
-una richiesta di accesso a una risorsa da parte di un utente autenticato deve essere approvata o rifiutata.
-\\ Il processo del controllo degli accessi è composto da due stadi principali: una fase decisionale, in cui si valutano i permessi dell'utente 
- formulando una decisione in base alle politiche di accesso del sistema,
-e una fase esecutiva, in cui si applica effettivamente quanto è stato deciso. 
+It is no secret that in the last three years, \textit{Large Language Models} (LLMs) have fundamentally transformed our relationship with technology. 
+Their impact rivals the most significant innovations of the past century, such as the internet and smartphone. When people contemplate Artificial Intelligence today, they immediately think of ChatGPT or Claude, which have seamlessly integrated into our daily routines.
+Yet these powerful tools come with significant environmental concerns. Their development and operation consume vast amounts of energy and water resource: modern data centers supporting these models require extensive cooling systems and electricity consumption that can rival small cities.
 
-\section{Worldwide LHC Computing Grid}
-Nell'ambito del calcolo distribuito, il \textit{grid computing} consiste 
-nell'uso di una rete di risorse computazionali distribuite geograficamente che collaborano 
-per raggiungere un determinato obiettivo.
-\\ Il \textit{Worldwide LHC Computing Grid} (WLCG) \cite{wlcg_doc} è un progetto dato dalla
- collaborazione 
-delle infrastrutture grid sparse in tutto il mondo, con l'obiettivo
-di analizzare le grandi quantità di dati generati dal \textit{Large Hadron Collider} (LHC) \cite{cern_lhc}, 
-l'acceleratore di particelle situato nel CERN di Ginevra. 
-\begin{figure}[h]
-    \includegraphics[width=10cm]{map.png}
-    \centering
-    \caption[Locazione geografica dei centri di calcolo del WLCG]{Locazione geografica dei centri di calcolo del Worldwide LHC Computing Grid.}
-    \label{mappa}
-\end{figure}
+In this opening chapter we will briefly examine the evolution of LLMs and provide a more technical description of their capabilities. Furthermore, we'll investigate their considerable environmental footprint while highlighting the growing imperative for efficient, locally-deployable models that democratize access without depleting our planet's resources. In this context, we will introduce the \textit{FRANKEN-LLAMA} project, which aims to create a more sustainable and efficient LLM.
+% imtroduce our project here
+The future of AI depends not just on what these models can do, but how sustainably they can do it.
 
-Ad oggi, il WLCG incorpora circa 170 centri di calcolo sparsi in 42 paesi. 
-Uno di questi risiede nel centro \textit{CNAF} dell'Istituto Nazionale di Fisica Nucleare (INFN) \cite{infn_cnaf} a Bologna,
- e rappresenta uno dei principali centri di calcolo di questa associazione. Come tale, il CNAF contribuisce
-  alla gestione e allo sviluppo del middleware associato all'infrastruttura grid del WLCG. 
+\section{A brief overview of the evolution of LLMs}
+Fundamentally, at the core of LLMs lies the concept of \textit{transformers}, a neural network architecture introduced in 2017 by Vaswani et al. in their famous paper "Attention is All You Need". Initially designed for translation tasks, transformers have since been adapted for a wide range of natural language processing (NLP) tasks such as summarization and sentiment analysis. A famous example of a transformer model is \textit{BERT} (Bidirectional Encoder Representations from Transformers), which has been widely used for various NLP tasks. BERT's architecture allows it to understand the context of words in a sentence by considering both the left and right context simultaneously, making it particularly effective for classification tasks such as entity named recognition.
 
+However, the biggest impact of transformers has been in the realm of text generation, where they can produce consistent and contextually relevant text based on a given prompt. This is achieved through a mechanism called \textit{self-attention}, which allows the model to weigh the importance of different words in a sentence when generating text. By using self-attention, transformers can capture long-range dependencies and relationships between words. A more technical overview of the transformer architecture is provided in Section \ref{transformer_architecture}. The GPT (Generative Pre-trained Transformer) series, developed by OpenAI, is a prime example of this capability, with GPT-4 being the most recent version. These models are pre-trained on vast amounts of text data and its performance has become a new benchmark for other models in the field.
 
-\section{Scopo del progetto}
-Molti dei sistemi software sviluppati al CNAF richiedono un sistema di autorizzazione. Siccome si tratta di progetti aventi scopi e funzionalità diverse,
-implementare 
-il controllo degli accessi direttamente in essi risulterebbe ridondante e potrebbe portare a problemi di ambiguità 
-se le politiche fossero implementate in modo diverso per ogni componente.
-\\ Il progetto sviluppato in questa tesi consiste nell'esplorazione di una soluzione a questo problema, ovvero un proof-of-concept di 
-un sistema di autorizzazione general-purpose e versatile. Siccome si interfaccerà potenzialmente con progetti in relazione al WLCG, 
-il sistema deve essere compatibile
- con le tecniche di autenticazione adottate dai suoi servizi.
-\\ Attualmente, il WLCG si trova in una fase di transizione dall'autenticazione basata su certificati proxy in favore all'uso dei token OAuth 2.0.
- Dunque, è necessario che il sistema sia compatibile con entrambi i metodi. 
-\\Un altro vincolo riguarda l'implementazione: i componenti del sistema devono basarsi su strumenti software di industria prontamente disponibili,
- in modo da assicurarne 
-la stabilità e l'affidabilità.  
+% [explain SLMs here]
 
-\section{Struttura del documento}
-Questa tesi si focalizzerà su un'analisi dettagliata del sistema creato, aiutandosi con schemi e frammenti 
-di codice a supporto della spiegazione.
-\\ Il Capitolo 2 è dedicato alla descrizione architetturale, analizzandone i componenti. 
-\\ Il Capitolo 3 mostra e motiva i dettagli implementativi del sistema e i software sul quale si basa, con un accenno alle tecniche di testing. 
-\\ Il Capitolo 4 spiega le tecniche di autenticazione supportate dall'infrastruttura e come è stata gestita la loro integrazione.  
-\\ Il Capitolo 5 descrive il processo di interfacciamento con un servizio esistente. 
-\\ Infine, il Capitolo 6 tratterà dei risultati di quanto è stato creato, proponendo 
-dei possibili miglioramenti e aggiungendo una riflessione personale sul lavoro svolto. 
+\section{Inner workings of a transformer}
+
+\section{The darker side of LLMs and scope of this project}
+
+\section{Relevant work}
+
+\section{Document structure}
+AAAAAAAA AM I GOING CRAZY?

@@ -50,14 +50,6 @@ le richieste provenienti dagli utenti tramite
  il reverse proxy e formulare una risposta.
 Questa viene inoltrata al mittente iniziale, senza che sia filtrata o analizzata, ma attraversando comunque il proxy.
 
-\begin{figure}[h]
-    \includegraphics[width=13cm]{topologia.png}
-    \centering
-    \caption[Rappresentazione concettuale del sistema di autorizzazione.]{Rappresentazione concettuale dell'infrastruttura. La richiesta di un utente viene prima processata dal reverse proxy, che
-     la inoltrerà o meno al servizio applicativo basandosi sulla decisione formulata dal sistema delle politiche di accesso.}
-    \label{topologia}
-\end{figure}
-
 \section{Topologia finale}
 In base a quanto è stato esposto nei paragrafi precedenti, si ottiene una struttura topologica simile a quanto mostrato nella Figura \ref{topologia}. 
 I numeri su ogni freccia dei flussi dati indicano la sequenza temporale delle trasmissioni delle informazioni tra gli elementi. 
