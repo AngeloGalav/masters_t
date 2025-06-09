@@ -1,56 +1,12 @@
-Durante la progettazione di un sistema di autorizzazione, è necessario considerare alcuni parametri fondamentali
- che ci permettono di valutarlo 
-nel contesto in cui ci si trova.
-\\ Quelli che hanno contribuito maggiormente sulle scelte progettuali sono stati:
-\begin{itemize}
-    \item la \textit{versatilità}, cioè la capacità di interfacciarsi con sistemi di 
-    funzionalità e struttura diversa.
-    \item la \textit{manutenibilità}, ovvero la facilità di apportare modifiche a sistema realizzato.
-\end{itemize}
-La prima è garantita attraverso la divisione in più componenti, cosicché modificare le regole di accesso non richieda
-un'alterazione generale del codice del complesso. 
-\\ La seconda è ottenuta tramite la separabilità totale dal servizio che si intende proteggere,
- facilitandone la compatibilità con altre tecnologie.  
-\\ Un'altra considerazione che ha influenzato l'architettura del sistema è stata la scelta del software per la gestione 
-della fase decisionale dell'autorizzazione, che richiede una gestione delle due fasi dell'autorizzazione tramite l'uso di componenti separati. 
+% Chapter 2: Background and Related Work
+Before explaining the details and implementation of the methodology used in this project, it is essential to provide an overview of the evolution of the inner workings of the Transformer architecture as well as Large Language Models. In addition, we will also discuss revelant compression techniques that have been developed in this context, and how they influenced this work.
+Finally, we will also shed some light on the target hardware, whose limitations have been a driving force behind the design choices made in this project.
 
-\section{Componenti principali}
+\section{The architecture of Transformers}
 
-L'architettura dell'infrastruttura presenta uno scheletro formato da tre componenti di principali: 
-\begin{itemize}
-    \item il \textit{sistema delle politiche di accesso}
-    \item il \textit{reverse proxy}
-    \item il \textit{servizio applicativo}
-\end{itemize}
-Ciascuna di esse veste un ruolo importante nella gestione della richiesta, tuttavia solamente le prime due influenzano il processo di autorizzazione. 
+% [explain SLMs here]
+\section{The structure of Large Language Models}
 
-\subsection{Sistema delle politiche di accesso}
-Il sistema delle politiche di accesso è la parte che determina come la richiesta dovrà essere gestita. 
-\\ Per adempiere al suo ruolo, sfrutta le informazioni di identità dell'utente contenute nella richiesta, 
-che devono essere propriamente formattate per essere comprese correttamente. 
-\\ Dopodiché, applica le regole di accesso e confronta i dati ricevuti con un database dei permessi, al quale ha accesso diretto.
-\\ Infine, restituisce in output una decisione, che stabilisce se l'accesso è consentito o meno.  
+\section{Relevant compression techniques}
 
-\subsection{Reverse proxy}
-Il reverse proxy rappresenta l'unico entry-point dell'intero sistema di autorizzazione. Il compito di questo componente è di
-mediare la comunicazione tra client e il servizio applicativo: ogni richiesta che viene fatta da un utente è obbligata ad attraversare 
-il reverse proxy prima di giungere al server. 
-\\ L'attraversamento del proxy è trasparente: al client apparirà di comunicare direttamente con il servizio, nonostante le richieste siano dirette al proxy e da esso propriamente gestite. 
-\\ La mediazione fornita da questo elemento incorpora un aspetto decisionale, attraverso il quale viene effettivamente espresso il concetto di autorizzazione. 
-Infatti, il reverse proxy inoltra o ignora le richieste al servizio applicativo, basandosi sull'output del sistema delle politiche di accesso.  
-\\ Il termine ``reverse'' permette di distinguerlo dai normali proxy d'inoltro, che interfacciano un client con l'esterno di una rete locale.
- Un reverse proxy, invece, viene posto nella comunicazione fra un server e i client provenienti da una rete esterna. 
- 
 
-\subsection{Servizio applicativo} \label{serv_server}
-Con servizio applicativo si intende il servizio che usufruisce del sistema di autorizzazione. 
-Nonostante ciò, l'intero sistema gli è totalmente trasparente e non necessita di modifiche per interfacciarsi con esso.
-\\Il suo ciclo di esecuzione consiste nel gestire 
-le richieste provenienti dagli utenti tramite
- il reverse proxy e formulare una risposta.
-Questa viene inoltrata al mittente iniziale, senza che sia filtrata o analizzata, ma attraversando comunque il proxy.
-
-\section{Topologia finale}
-In base a quanto è stato esposto nei paragrafi precedenti, si ottiene una struttura topologica simile a quanto mostrato nella Figura \ref{topologia}. 
-I numeri su ogni freccia dei flussi dati indicano la sequenza temporale delle trasmissioni delle informazioni tra gli elementi. 
-\\Ciascun componente è interpretabile come un processo separato in esecuzione sullo stesso server o su server diversi. 
