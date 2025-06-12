@@ -3,7 +3,9 @@ Before explaining the details and implementation of the methodology used in this
 Finally, we will also shed some light on the target hardware, whose limitations have been a driving force behind the design choices made in this project.
 
 \section{Early language models}
-Before the Transformer architecture, language models were typically based on recurrent neural networks (RNNs). They consists in an extension of the Multi-Layer Perceptron (MLP) in which by integrating cycles, allowing for the network to take into account the previous inputs when making a prediction. For these reason, they can learn long-range dependencies in sequential data, such as text. However, RNNs can be very much prone to the vanishing gradient problem (\ref{rnn_details}), which makes it difficult for them to train in the long run, as during backprogration the contribution of the gradients from earlier layer diminishes exponentially. 
+Before the Transformer architecture, language models were typically based on recurrent neural networks (RNNs). They consists in an extension of the Multi-Layer Perceptron (MLP) in which by integrating cycles, allowing for the network to take into account the previous inputs when making a prediction. For these reason, they can learn long-range dependencies in sequential data, such as text.
+
+However, RNNs can be very much prone to the vanishing gradient problem (\cite{rnn_details}), which makes it difficult for them to train in the long run, as during backpropagration the contribution of the gradients from earlier layer diminishes exponentially. 
 
 This problem motivated the introduction of the Long Short-Term Memory (LSTM) units, which uses gated cells in order to store more information about the input. In particular, there are three types gate cells:
 \begin{itemize}
@@ -19,14 +21,14 @@ This problem motivated the introduction of the Long Short-Term Memory (LSTM) uni
 \end{figure}
 
 
-\section{The architecture of Transformers}
+\section{The architecture of Transformers} \label{transformer_architecture}
 The Transformer architecture, introduced by Vaswani et al. (2017) [TODO ADD REF HERE], represents a paradigm shift in sequence modeling, moving away from recurrent and convolutional approaches toward a purely attention-based mechanism. This innovation addressed fundamental limitations of previous architectures, particularly the sequential processing bottleneck that hindered parallelization during training.
 Attention Mechanism Evolution
 The development of attention mechanisms began with Bahdanau et al. (2014), who introduced additive attention to improve neural machine translation by allowing the decoder to focus on relevant parts of the input sequence. This was refined by Luong et al. (2015) with multiplicative attention, which offered computational advantages. However, the breakthrough came with Vaswani et al. (2017), who demonstrated that attention mechanisms alone, without recurrence or convolution, could achieve state-of-the-art results across multiple tasks.
 The core innovation lies in the scaled dot-product attention mechanism:
-\begin{equation}
-\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
-\end{equation}
+% \begin{equation}
+% \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+% \end{equation}
 where Q, K, and V represent queries, keys, and values respectively, and $d_{k}$ is the dimension of the key vectors. This formulation enables efficient computation while capturing long-range dependencies without the sequential constraints of RNNs.
 
 \section{The structure of Large Language Models}
