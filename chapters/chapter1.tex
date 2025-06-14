@@ -1,5 +1,5 @@
 It is no secret that, in the last three years, \textit{Large Language Models} (LLMs) have fundamentally transformed our relationship with technology.
-Their impact rivals the most significant innovations of the past century, such as the internet and the smartphone. When people contemplate Artificial Intelligence today, they immediately think of ChatGPT or Claude, which have seamlessly integrated into our daily routines.
+Their impact rivals the most significant innovations of the past century, such as the internet and the smartphone. When people contemplate \textit{Artificial Intelligence} (AI) today, they immediately think of ChatGPT or Claude, which have seamlessly integrated into our daily routines.
 Yet these powerful tools come with significant environmental concerns. Their development and operation consume vast amounts of energy and water resource: modern data centers supporting these models require extensive cooling systems and electricity consumption that can rival small cities.
 
 The computational complexity of these systems necessitates cloud-based deployment, which not only amplifies their environmental footprint but also fundamentally restricts user autonomy. This cloud dependency creates a concerning power dynamic where users have limited control over their tools, while simultaneously enabling extensive data collection practices and potential surveillance mechanisms that would be impossible with local, user-controlled alternatives.
@@ -24,7 +24,7 @@ Data centers housing these models consume approximately 1-2\% of global electric
 
 Water consumption presents an equally pressing concern that receives far less attention. Modern data centers require extensive cooling systems, with some facilities consuming millions of gallons daily. According to their sustainability report \cite{google_report}, Google's water usage increased by ~20\% between 2021 and 2022, then by ~17\% from 2022 to 2023, and is largely attributed to AI inference operations \cite{ai_water}. In regions already facing water scarcity, this additional demand creates direct competition with human needs and agricultural requirements.
 
-In this context, one has to keep in mind the embedded carbon cost of the hardware itself. Each GPU cluster supporting LLM operations represents significant emissions from manufacturing, shipping, and eventual disposal. The rapid pace of AI advancement drives frequent hardware upgrades, creating electronic waste streams that the recycling industry struggles to process effectively.
+On the other hand, one has to keep in mind the embedded carbon cost of the hardware itself. Each GPU cluster supporting LLM operations represents significant emissions from manufacturing, shipping, and eventual disposal. The rapid pace of AI advancement drives frequent hardware upgrades, creating electronic waste streams that the recycling industry struggles to process effectively.
 
 These environmental costs scale directly with model size and usage frequency, creating a fundamental tension between AI capabilities and sustainability.
 
@@ -47,8 +47,15 @@ These environmental costs scale directly with model size and usage frequency, cr
     \label{fig:energy_consumption}
 \end{figure}
 
-\section{Scope of this project}
-While we've examined several critical challenges facing LLMs, it's worth emphasizing that these models are not fundamentally evil, instead they hold significant potential for positive impact. This project presents a pipeline to optimize and compress Large Language Models in order to reduce their size. Compressing models can reduce their energy consumption and make them more democratically accessible, while preserving their core functionality.
+\section{Scope}
+While we've examined several critical challenges facing LLMs, it's worth emphasizing that these models hold significant potential for positive impact. As such, what was outlined in the previous sections points instead toward an urgent need for alternatives to the current paradigm of massive, centralized LLMs. A promising solution lies in compression techniques that can dramatically reduce model size while preserving core functionality. Through compression, billion-parameter server-sized models can be scaled down to more manageable ones that run much more efficiently.
+
+\subsection{The main objective}
+In this context, the objective of this project is to push the boundaries of memory efficiency for small-scale LLMs by applying a targeted suite of compression techniques. We begin with a distilled model, a 1B parameter variant of LLaMA 3, which already represents a significantly reduced footprint compared to full-scale LLMs. From there, we explore and implement further optimizations, including depth and width pruning, \textit{Low-Rank Adaptation} (LoRA), and quantization.
+
+Pruning allows us to remove redundant layers or neurons from the network architecture, trimming excess capacity without substantial loss of capability. Quantization reduces the bit-width of model weights and activations, decreasing both memory usage and compute requirements. LoRA, meanwhile, introduces a lightweight, parameter-efficient training mechanism that reduces the cost of fine-tuning and adaptation without (necessarily) modifying the base model weights. In this way, the model can be adapted to new tasks or domains with minimal overhead.
+
+The reason behind the focus on maximizing memory efficiency is related to the fact that memory represents the most expensive constraint in our target deployment scenario, where the intended hardware platform consists of a low-power RISC-V SoC with severely constrained memory resources (further details on the target hardware can be found in Section \ref{target_hardware}). Crucially, optimizations that reduce memory footprint also translate directly into computational complexity improvements, creating a dual benefit for resource-constrained environments.
 
 \subsection{How can optimization techniques help?}
 Optimization techniques tackle the environmental, social, and infrastructure problems that come with large-scale LLMs. When models run more efficiently, they need far less power for each query. Smaller models can actually run on edge devices and other energy-efficient hardware, cutting down on electricity usage substantially. This efficiency boost also extends the useful life of older devices: hardware that might otherwise be considered obsolete can suddenly run modern LLMs, which helps reduce electronic waste and makes better use of existing resources.
@@ -57,12 +64,6 @@ There's also the autonomy angle. Compact models that run locally allows users to
 
 In other words, optimization is a pathway toward environmentally sustainable, privacy-respecting, and widely accessible AI.
 
-\subsection{The objective of this project}
-The objective of this project is to push the boundaries of memory efficiency for small-scale LLMs by applying a targeted suite of compression techniques. We begin with a distilled model, a 1B parameter variant of LLaMA 3, which already represents a significantly reduced footprint compared to full-scale LLMs. From there, we explore and implement further optimizations, including depth and width pruning, low-rank adaptation (LoRA), and quantization.
-
-Pruning allows us to remove redundant layers or neurons from the network architecture, trimming excess capacity without substantial loss of capability. Quantization reduces the bit-width of model weights and activations, decreasing both memory usage and compute requirements. LoRA, meanwhile, introduces a lightweight, parameter-efficient training mechanism that reduces the cost of fine-tuning and adaptation without (necessarily) modifying the base model weights. In this way, the model can be adapted to new tasks or domains with minimal overhead.
-
-The reason behind the focus on maximizing memory efficiency is related to the fact that memory represents the most expensive constraint in our target deployment scenario. The intended hardware platform consists of low-power  RISC-V SoC with severely constrained memory resources (further details on the target hardware can be found in Section \ref{target_hardware}). Crucially, optimizations that reduce memory footprint also translate directly into computational complexity improvements, creating a dual benefit for resource-constrained environments.
 
 \section{Document structure}
 Will write this when the document is finished.
