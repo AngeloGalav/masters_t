@@ -1,11 +1,20 @@
 Intro here
 
 \section{Preliminary research: Franken-LLaMA}
-\section{The starting point}
-speak about llama1b, distillation and why is it hard.
-\section{Pruning methods}
-\subsection{Depth-wise pruning}
-\subsection{Width-wise pruning (WANDA-based)}
-\subsection{LoRA}
+
+Before embarking on systematic compression techniques for our target 1B parameter LLaMA model, we conducted preliminary research to understand the behavior of transformer architectures under structural modifications. This exploratory consisted on the ``Franken-LLaMA'' project \cite{franken-llama}, which involved experimenting with selective layer skipping and repetition in the larger LLaMA2-7B-Chat \cite{llama2} model to gain a first insight into which components of the transformer architecture are most critical for maintaining model performance.
+
+The approach centered on modifying the standard transformer execution flow by selectively including, excluding, or repeating attention blocks within the 32-layer architecture. The repetition strategy was particularly attractive as it could theoretically reduce memory footprint by reusing the same layer weights multiple times rather than storing distinct parameters for each position. This weight sharing approach aligned directly with our target hardware constraints outlined in Section \ref{target_hardware}, where the memory limitation makes parameter reduction a critical optimization target.
+
+We tested 25 different layer configurations, each of which was evaluated through qualitative text generation tasks and quantitative assessment on the HellaSwag \cite{hellaswag} dataset.
+The results revealed several that conservative modification, often maintained reasonable performance while reducing computational overhead. In particular, skipping the layers more towards the middle of the model rather than its ends resulted in low performance degradation. For instance, the configuration that skipped layers 23-27 achieved a HellaSwag score of 0.38 compared to the baseline's 0.34, suggesting that certain middle layers may contribute less to final performance than expected.
+
+However, more aggressive modifications typically led to severe degradation in output quality. Configurations involving extensive layer repetition or using only sparse layer selections often produced incoherent text with non-ASCII characters and semantic breakdown. This behavior indicated that while some redundancy exists in the transformer architecture, maintaining a balanced representation across different depths remains crucial for coherent language generation.
+
+These preliminary findings informed our subsequent approach to systematic compression: it revealed that strategic layer removal could sometimes improve performance metrics, suggesting that pruning techniques might offer promising avenues for optimization; at the same time, it showed how layer repetition was not a viable strategy and caused heavy performance degradation.
+\section{The starting point: LLaMA 3.2 1B}
+\section{Depth-wise pruning} \label{depth_pruning}
+\section{Width-wise pruning (WANDA-based)} \label{wanda}
+\section{LoRA}
 \section{Quantization and EoRA}
 \section{Evaluation criteria}
