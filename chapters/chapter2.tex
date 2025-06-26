@@ -1,7 +1,7 @@
 % Chapter 2: Background and Related Work
 Understanding the methodology behind this thesis requires first examining how Transformer architectures and Language Models have evolved. This chapter explores that evolution and briefly introduces the LLaMA family as it will be relevant to this project in (see Chapter \ref{chap:methodology}). The discussion then turns to the hardware limitations which influenced design decisions in this context. Finally, the chapter reviews research and literature on LLM optimization techniques relevant to this work.
 
-\section{Early Language Models}
+\section{A Brief Overview of Early Language Models}
 Before the emergence of the Transformer architecture, language models predominantly relied on \textit{Recurrent Neural Networks} (RNNs). These networks represent an evolution of the \textit{Multi-Layer Perceptron} (MLP), and incorporate cyclic connections within their architecture to create recurrent circuits. Such design enables the model to maintain a form of memory, allowing it to consider previous inputs when generating predictions and thereby capturing long-range dependencies inherent in sequential data such as text.
 
 Despite their theoretical advantages, RNNs suffer from a critical limitation known as the vanishing gradient problem \cite{rnn}. During backpropagation, gradients from earlier time steps decay exponentially as they flow backward through the network layers. This degradation severely hampers the network's ability to be trained effectively, as the influence of distant past information becomes negligible in the parameter updates.
@@ -21,17 +21,24 @@ All of these gates can be clearly observed in Figure \ref{fig:lstm-architecture}
 \label{fig:lstm-architecture}
 \end{figure}
 
-While LSTMs significantly improved the ability to model sequential data, they still faced challenges in terms of parallelization and context understanding, especially when compared to Transformers.  Nevertheless, LSTMs are still widely used for various \textit{natural language processing} (NLP) tasks, including text generation \cite{lstm_textgeneration}.
+While LSTMs significantly improved the ability to model sequential data, they still faced challenges in terms of parallelization and context understanding, especially when compared to newer architectures such as Transformers (see Section \ref{transformer_architecture}).  Nevertheless, LSTMs are still widely used for various \textit{natural language processing} (NLP) tasks, including text generation \cite{lstm_textgeneration}.
+
+\subsection{Tokenization}
+
+Neural networks operate exclusively with numerical data, thus textual input needs to be converted into vector representations before processing. This is achieved through tokenization, which segments raw text into discrete units called tokens that are then mapped to high-dimensional vector embeddings.
+
+The tokenization process typically involves breaking text into subword units rather than complete words, which enables models to handle both common vocabulary and previously unseen terms through compositional understanding. Modern language models predominantly employ algorithms such as \textit{Byte Pair Encoding} (BPE) \cite{bpe}, which iteratively merges frequently occurring character pairs to create an optimal vocabulary. Each resulting token corresponds to a learned vector embedding that captures semantic and syntactic properties, enabling the neural network to process linguistic information through mathematical operations.
 
 \section{The Transformer Architecture}  \label{transformer_architecture}
 
-The Transformer architecture, introduced by Vaswani et al. \cite{attention_is_all_you_need}, fundamentally changed how we approach sequence modeling by abandoning recurrent connections entirely in favor of attention mechanisms. Unlike LSTMs that process sequences step-by-step, the Transformer can examine all positions simultaneously, and as such it can be easily parallelized during training. Moreover, it can capture long-range dependencies thanks to the attention mechanism.
+The Transformer architecture, introduced by Vaswani et al. \cite{attention_is_all_you_need}, fundamentally changed how we approach sequence modeling by abandoning recurrent connections entirely in favor of the attention mechanism, allowing to capture long-range dependencies. Moreover, instead of that processing sequences step-by-step like LSTMs, the Transformer can examine all elements in a sequence simultaneously, and thus it can be easily parallelized during training.
 
-\subsection{The Attention Mechanisms}
+\subsection{The Attention Mechanism}
 
-At the core of the Transformer lies the attention mechanism, which addresses the information bottleneck created when sequence models compress an entire input sequence into a single fixed-size vector. This bottleneck becomes particularly problematic for long sequences, where important information can be lost or diluted.
+Attention allows a model to dynamically focus on different parts of the input sequence when generating each output token, similar to how humans selectively concentrate on relevant information when reading a book. This is achieved by directly comparing and relating any two positions in a sequence, regardless of their distance (i.e. self-attention).
 
-Attention allows a model to dynamically focus on different parts of the input sequence when generating each output token, similar to how humans selectively concentrate on relevant information when reading a book. This is done, essentially, by directly comparing and relating any two positions in a sequence, regardless of their distance (i.e. self-attention).
+As such, the information bottleneck created when sequence models compress an entire input sequence into a single fixed-size vector is partially dealt with. This bottleneck becomes particularly problematic for long sequences, where important information can be lost or diluted.
+
 
 \subsection{Scaled Dot-Product Attention}
 
@@ -52,7 +59,7 @@ Each component serves a specific purpose:
 The attention computation proceeds in four steps:
 
 \begin{enumerate}
-   \item \textbf{Similarity Computation}: $QK^T$ produces a $n \times n$ matrix where entry $(i,j)$ represents how much position $i$ should attend to position $j$. The dot product naturally measures similarity between query and key vectors.
+   \item \textbf{Similarity Computation}: $QK^T$ produces a $n \times n$ attention matrix where entry $(i,j)$ represents how much each token at position $i$ is correlated to a token at position $j$. The dot product naturally measures similarity between query and key vectors.
 
    \item \textbf{Scaling}: Division by $\sqrt{d_k}$ (where $d_k$ is the dimensionality of the keys) prevents the dot products from becoming too large. Without scaling, large dot products push the softmax function into regions with extremely small gradients. For example, if $d_k = 512$, dot products could reach magnitudes of $\pm 20$ or more, causing softmax to output distributions close to one-hot vectors.
 
@@ -63,7 +70,7 @@ The attention computation proceeds in four steps:
 
 \subsection{Multi-Head Attention}
 
-The Transformer employs multi-head attention so that each head can focus on different parts of the input. Some heads might track syntax, others semantics, positions, etc. This is done by projecting the input matrices $Q, K, V$ by $h$ times using different learned linear projections:
+Rather than applying attention once to the full representation, the Transformer divides the input representation (i.e. $Q, K, V$) into $h$ blocks and applies the Scaled Dot Product Attention independently to each block. Each of these independent blocks is called an attention head, and they capture different types of relationships simultaneously (some heads might track syntax, others semantics, positions, etc.). To achieve this, the input matrices $Q, K, V$ are projected $h$ times using different learned linear projections:
 \begin{equation}
 (QW_i^Q, KW_i^K, VW_i^V)
 \end{equation}
@@ -82,14 +89,15 @@ Multi-head attention essentially gives the model multiple different perspective 
 
 \subsection{Positional Encodings}
 
-Since attention is permutation-invariant, the Transformer requires explicit positional information. The original work uses sinusoidal positional encodings:
+Since the attention mechanism computes similarity scores between every pair of tokens based solely on their content representations  (i.e. is permutation invariant), it treats the input as an unordered set rather than a sequence. This means that rearranging the input tokens would produce identical attention weights, making it impossible for the model to distinguish between different orderings of the same words. To address this limitation, the Transformer requires explicit positional information.
 
+The original work uses sinusoidal positional encodings:
 \begin{align}
 PE_{(\text{pos}, 2i)} &= \sin(\text{pos}/10000^{2i/d_{\text{model}}}) \\
 PE_{(\text{pos}, 2i+1)} &= \cos(\text{pos}/10000^{2i/d_{\text{model}}})
 \end{align}
 
-These encodings have useful properties: they create unique representations for each position, allow the model to learn relative positions through linear combinations, and can theoretically handle sequences longer than those seen during training.
+These encodings create unique representations for each position that enable the model to learn the relative location of tokens through linear combinations of the sinusoidal functions.
 
 \subsection{Encoder-Decoder Transformers}
 
@@ -111,7 +119,7 @@ These architectures are simpler and more scalable, and they are the ones employe
 Decoder-only Transformers are ideal for open-ended text generation and other tasks where the output is not conditioned on a separate input sequence.
 Figure \ref{fig:sidebyside} shows a comparison of encoder-decoder and decoder-only transformer architectures.
 
-\section{A Brief Overview on the LLaMA Family of Models} \label{llama_overview}
+\section{Introducing the LLaMA Family of Models} \label{llama_overview}
 
 The \textit{Large Language Model Meta AI} (LLaMA) family~\cite{llama}, developed by Meta AI, comprises a series of transformer-based autoregressive language models designed as competitors to OpenAI's GPT model family. The original LLaMA models were introduced in early 2023, followed by LLaMA 2 \cite{llama2} later that year and LLaMA 3 \cite{llama3} in 2024.
 
@@ -163,9 +171,9 @@ The key insight of HomoDistil is that starting from the teacher model and iterat
 
 \subsection{Pruning Approaches}
 
-As detailed in Chapter \ref{chap:methodology}, pruning significantly reduces model complexity through two main approaches. Width pruning targets individual neurons or layers (usually) within a transformer block, while depth pruning eliminates entire submodules.
+Pruning is an optimization technique that reduces model complexity by systematically removing network components. The approach operates through two primary strategies: width pruning, which removes individual neurons or layers within transformer blocks, and depth pruning, which eliminates entire submodules. Given its central importance to this work, pruning techniques are examined in detail in Chapter \ref{chap:methodology}.
 
-In a similar way to this project, \textit{Two-Stage Structured Pruning} (2SSP) \cite{2ssp} combines these approaches optimally. This method applies width pruning to feed-forward networks in the first stage, followed by depth pruning of attention modules in the second stage.
+Nevertheless, it is worth reviewing relevant work in this area to position our contribution within the broader research landscape. \textit{Two-Stage Structured Pruning} (2SSP) \cite{2ssp} combines width and depth pruning optimally using a two stage approach. This method applies width pruning to feed-forward networks in the first stage, followed by depth pruning of attention modules in the second stage.
 
 For width-pruning, importance scores are computed based on the magnitude of neuron activations across calibration samples, which are then used to remove entire neurons. On the other hand, the second stage targets attention modules which are iteratively removed based on their impact on model perplexity. This coarser-grained approach proves effective because attention modules often exhibit high redundancy.
 
