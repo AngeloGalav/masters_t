@@ -31,7 +31,7 @@ The tokenization process typically involves breaking text into subword units rat
 
 \section{The Transformer Architecture}  \label{transformer_architecture}
 
-The Transformer architecture, introduced by Vaswani et al. \cite{attention_is_all_you_need}, fundamentally changed how we approach sequence modeling by abandoning recurrent connections entirely in favor of the attention mechanism, allowing to capture long-range dependencies. Moreover, instead of that processing sequences step-by-step like LSTMs, the Transformer can examine all elements in a sequence simultaneously, and thus it can be easily parallelized during training.
+The Transformer architecture, introduced by Vaswani et al. \cite{attention_is_all_you_need}, fundamentally changed how sequence modeling is approached by abandoning recurrent connections entirely in favor of the attention mechanism, allowing to capture long-range dependencies. Moreover, instead of that processing sequences step-by-step like LSTMs, the Transformer can examine all elements in a sequence simultaneously, and thus it can be easily parallelized during training.
 
 \subsection{The Attention Mechanism}
 
@@ -171,7 +171,7 @@ The key insight of HomoDistil is that starting from the teacher model and iterat
 
 \subsection{Pruning Approaches}
 
-Pruning is an optimization technique that reduces model complexity by systematically removing network components. The approach operates through two primary strategies: width pruning, which removes individual neurons or layers within transformer blocks, and depth pruning, which eliminates entire submodules. Given its central importance to this work, pruning techniques are examined in detail in Chapter \ref{chap:methodology}.
+Pruning is an optimization technique that reduces model complexity by systematically removing network components. The approach operates through two primary strategies: width pruning, which removes individual neurons or layers within transformer blocks, and depth pruning, which eliminates entire submodules. Given its central importance to this work, pruning techniques are examined in detail in Section \ref{pruning}.
 
 Nevertheless, it is worth reviewing relevant work in this area to position our contribution within the broader research landscape. \textit{Two-Stage Structured Pruning} (2SSP) \cite{2ssp} combines width and depth pruning optimally using a two stage approach. This method applies width pruning to feed-forward networks in the first stage, followed by depth pruning of attention modules in the second stage.
 
@@ -179,11 +179,11 @@ For width-pruning, importance scores are computed based on the magnitude of neur
 
 A critical innovation in 2SSP is the automatic balancing of sparsity between the two stages. The method uses an adaptive formula that considers the relative sizes of feed-forward and attention components to determine optimal allocation of parameter reduction across stages. This ensures that neither component becomes a bottleneck while maintaining overall performance.
 
-While some similarities can be found, this work differs from the pruning approach adopted in this project in two fundamental ways.
+While some similarities can be found, the work of this thesis differs from the pruning approach adopted in 2SSP in two fundamental ways.
 \begin{itemize}
-\item While we target attention weight matrices for width-pruning, their method focuses on FFN components. In addition, the structured width-pruning strategies are entirely distinct: 2SSP removes complete rows and columns by slicing weight matrices rather than using a ratio-based structural pruning (see Section \ref{wanda}).
-\item Our method for computing layer importance during depth-pruning employs a compound metric rather than relying solely on perplexity-based measures (see Section \ref{depth_pruning}).
-\end{itemize}.
+\item The width-pruning targets differ significantly: while 2SSP focuses on FFN components, the approach presented in this thesis targets all attention weight matrices. Additionally, the structured width-pruning strategies are entirely distinct: 2SSP removes complete rows and columns by slicing weight matrices rather than using ratio-based structural pruning (see Section \ref{wanda}).
+\item The method for computing layer importance during depth-pruning employs a compound metric rather than relying solely on perplexity-based measures (see Section \ref{depth_pruning}).
+\end{itemize}
 
 Another promising approach to structured pruning is demonstrated by \textit{Sheared LLaMA} \cite{sheared_llama}, which takes a fundamentally different perspective by viewing pruning as an initialization step rather than a final compression technique. This method employs targeted structured pruning to compress LLaMA2-7B down to 1.3B and 2.7B parameter models, followed by substantial continued pre-training to recover performance.
 
