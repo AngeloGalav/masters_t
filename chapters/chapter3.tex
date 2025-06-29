@@ -150,7 +150,7 @@ The quantization process follows the mapping:
 \end{equation}
 where $x$ represents the original floating-point value, $s$ denotes the scale factor, $z$ is the zero-point offset, and $q$ is the quantized value. Subtracting the offset and dividing by the scale normalizes the floating-point value to the quantization grid, so that it is accurately represented within the discrete range of the target precision format.
 
-Naive quantization approaches such as round-to-nearest often result in significant accuracy degradation. The GPTQ technique \cite{gptq_quantization} addresses these limitations through a sophisticated post-training quantization algorithm that leverages second-order information from the Hessian matrix of the layer's reconstruction error to minimize quantization impact. Building upon the Optimal Brain Quantization (OBQ) framework, GPTQ formulates quantization as a layer-wise optimization problem where for each linear layer with weight matrix $W$ and calibration inputs $X$, the algorithm seeks quantized weights $\hat{W}$ that minimize the reconstruction error:
+Naive quantization approaches such as round-to-nearest often result in significant accuracy degradation. The GPTQ technique proposed by Frantar et al. \cite{gptq_quantization} addresses these limitations through a sophisticated post-training quantization algorithm that leverages second-order information from the Hessian matrix of the layer's reconstruction error to minimize quantization impact. Building upon the \textit{Optimal Brain Quantization} (OBQ) framework \cite{obq}, GPTQ formulates quantization as a layer-wise optimization problem where for each linear layer with weight matrix $W$ and calibration inputs $X$, the algorithm seeks quantized weights $\hat{W}$ that minimize the reconstruction error:
 \begin{equation}
 \arg\min_{\hat{W}} ||WX - \hat{W}X||_2^2
 \end{equation}
@@ -213,3 +213,42 @@ In the default configuration of the pipeline, the EoRA calibration step uses 64 
 
 
 \section{Evaluation} \label{evaluation}
+
+The evaluation framework employs two distinct benchmarking datasets to assess model performance across different dimensions of language understanding. WikiText-2 \cite{wikitext} serves as the primary metric for measuring language modeling capability through perplexity computation \cite{perplexity}, while TriviaQA \cite{triviaqa} evaluates both reading comprehension and factual knowledge through question-answering tasks.
+
+The implementation leverages a custom evaluation framework which automatically detects model types and applies appropriate loading procedures.
+
+\subsection{WikiText-2 Perplexity Evaluation}
+
+WikiText-2 \cite{wikitext} represents a collection of high-quality Wikipedia articles that serves as a standard benchmark for language modeling tasks. The dataset consists of over 2 million tokens extracted from verified Wikipedia articles, providing a diverse corpus of well-structured text that spans multiple domains and writing styles.
+
+Perplexity serves as the fundamental metric for language model evaluation, measuring how well a model predicts the next token in a sequence. Mathematically, perplexity is defined as the exponential of the cross-entropy loss:
+
+\begin{equation}
+\text{Perplexity} = \exp\left(\frac{1}{N} \sum_{i=1}^{N} -\log P(w_i | w_1, w_2, \ldots, w_{i-1})\right)
+\end{equation}
+
+where $N$ represents the total number of tokens, $w_i$ denotes the $i$-th token, and $P(w_i | w_1, w_2, \ldots, w_{i-1})$ represents the model's predicted probability for the correct next token given the preceding context.
+Lower perplexity values indicate better language modeling performance, with the metric providing intuitive interpretation: a perplexity of $X$ means the model is, on average, as confused as if it had to choose uniformly among $X$ possibilities for each token.
+
+The evaluation protocol processes the WikiText-2 test split by accumulating negative log-likelihoods across all valid tokens before computing the final exponential transformation. The implementation iterates through sequences, computing cross-entropy loss for each token while applying attention masks to exclude padding tokens from the calculation, ensuring that only meaningful content contributes to the perplexity measurement.
+
+\subsection{TriviaQA Question-Answering Evaluation}
+
+TriviaQA \cite{triviaqa} constitutes a comprehensive reading comprehension dataset containing over 95,000 question-answer pairs sourced from trivia and quiz-bowl competitions. The dataset's distinctive characteristic lies in its dual-mode evaluation framework that enables assessment of both knowledge retrieval and reading comprehension capabilities through closed-book and open-book testing scenarios.
+
+The closed-book evaluation presents models with questions in isolation, requiring them to rely entirely on knowledge encoded in their parameters during pre-training. This mode directly tests the factual knowledge retention of compressed models and reveals whether compression techniques have degraded the model's ability to recall specific information. Questions use a simple prompt structure: ``Question: [question text] Answer:''.
+
+Conversely, the open-book evaluation provides relevant context passages alongside each question, which simulates a reading comprehension scenario where models must extract answers from provided text. The context is derived from TriviaQA's associated search results, with the implementation selecting the shortest available context passage to minimize computational overhead while preserving essential information. Consequently, the prompt format becomes: ``Context: [context passage] Question: [question text] Answer:''.
+
+Answer correctness evaluation employs a three-tier verification system designed to accommodate the variability inherent in natural language responses. The evaluation process begins with testing the exact matching of the answer, where the generated text is compared directly against all provided correct answer aliases after normalization. Normalization involves converting text to lowercase, removing punctuation, and standardizing whitespace to ensure fair comparison despite minor formatting differences.
+
+When exact matching fails, the system applies substring matching, checking whether any correct answer appears as a contiguous substring within the generated response. This approach accounts for models that provide correct answers embedded within longer explanations or additional context, which is common behavior in instruction-tuned models.
+
+The final verification stage implements fuzzy matching for cases where neither exact nor substring matching succeeds. For answers containing multiple words, the system computes the intersection between the set of words in the generated answer and each correct answer, considering a response correct if at least 80\% of the words in the target answer appear in the generated text:
+
+\begin{equation}
+\text{Fuzzy Match} = \frac{|\text{Words}_{\text{generated}} \cap \text{Words}_{\text{correct}}|}{|\text{Words}_{\text{correct}}|} \geq 0.8
+\end{equation}
+
+Generation parameters are carefully controlled to ensure consistent evaluation conditions. Models generate between 1 and 50 tokens per answer using deterministic decoding (with temperature set to 1.0) to mitigate randomness that could affect reproducibility. The evaluation framework processes 1200 samples of TriviaQA's validation split (alternatively, the sample can be tuned by the user), and the accuracy is computed separately for these two tasks.
