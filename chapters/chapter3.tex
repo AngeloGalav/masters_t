@@ -21,6 +21,8 @@ The core result of this research is the compression pipeline, which implements a
 
 The choice of this particular model as the starting point is both strategic and practical. While incorporating distillation directly into the pipeline would have been ideal given its effectiveness as a compression technique, the computational requirements make it rather prohibitive: in terms of complexity, distillation is essentially equivalent to training a model from scratch, and requires extensive GPU resources that far exceed the computational budget available for the project. Thus, an existing pre-distilled model was utilized instead which already provides a rather compact foundation.
 
+Following the approach established in the preliminary experiments (Section \ref{frankenllama}), the pipeline is implemented using PyTorch \cite{pytorch} for model modifications and Hugging Face's transformers library \cite{hf_transformers} for model loading and inference. The majority of configurations were developed using the Instruct version of LLaMA 3.2 1B \cite{llama3_1b_instruct}, as these instruction-tuned models are specifically optimized for dialogue and question-answering tasks that constitute the primary evaluation benchmarks in this work, thereby eliminating the need for additional prompt engineering during testing phases. Nevertheless, the pipeline architecture can produce configurations built upon the vanilla LLaMA 3.2 1B variant \cite{llama3_1b} by specifying a flag before execution.
+
 The pipeline follows a five-stage progression, with each stage building upon the previous one. The particular ordering was chosen based on the complementary nature of these techniques and their relative impact on model structure.
 
 \begin{enumerate}
@@ -37,8 +39,6 @@ The pipeline follows a five-stage progression, with each stage building upon the
 
 Detailed descriptions of each stage are provided in the following sections. Each step yields an intermediate model suitable for independent evaluation, except when explicitly stated otherwise. The modular design supports selective execution through comprehensive tuning options, such as the ability to skip specific stages or experiment with different parameter configurations without modifying the core implementation. Having intermediate models allows to conduct ablation studies more easily and adapt the pipeline to specific hardware constraints.
 
-
-% TODO: COMPLETELY REVISE THIS SECTION
 \section{Pruning techniques} \label{pruning}
 
 Pruning reduces neural network complexity by removing components according to importance criteria. The technique operates through two distinct main approaches that differ in their granularity and organization:
@@ -146,22 +146,37 @@ Quantization represents a fundamental compression technique that maps continuous
 
 The quantization process follows the mapping:
 \begin{equation}
-q = \text{round}\left(\frac{x - z}{s}\right)
+\text{quant}(x) = \text{round}\left(\frac{x - z}{s}\right)
 \end{equation}
 where $x$ represents the original floating-point value, $s$ denotes the scale factor, $z$ is the zero-point offset, and $q$ is the quantized value. Subtracting the offset and dividing by the scale normalizes the floating-point value to the quantization grid, so that it is accurately represented within the discrete range of the target precision format.
 
-Normally, naive quantization approaches such as round-to-nearest often result in significant accuracy degradation. The GPTQ technique \cite{gptq_quantization} addresses these limitations through a sophisticated post-training quantization algorithm that leverages second-order information to minimize reconstruction error. GPTQ formulates quantization as a layer-wise optimization problem, where for each linear layer with weight matrix $W$ and calibration inputs $X$, the algorithm seeks quantized weights $\hat{W}$ that minimize the reconstruction error:
+Naive quantization approaches such as round-to-nearest often result in significant accuracy degradation. The GPTQ technique \cite{gptq_quantization} addresses these limitations through a sophisticated post-training quantization algorithm that leverages second-order information from the Hessian matrix of the layer's reconstruction error to minimize quantization impact. Building upon the Optimal Brain Quantization (OBQ) framework, GPTQ formulates quantization as a layer-wise optimization problem where for each linear layer with weight matrix $W$ and calibration inputs $X$, the algorithm seeks quantized weights $\hat{W}$ that minimize the reconstruction error:
 \begin{equation}
 \arg\min_{\hat{W}} ||WX - \hat{W}X||_2^2
 \end{equation}
 
-The key innovation enabling scalability to billion-parameter models is the insight that quantizing weights in arbitrary order yields comparable results to greedy selection for large layers, reducing computational complexity from $O(d_{\text{row}} \cdot d_{\text{col}}^3)$ to $O(\max\{d_{\text{row}} \cdot d_{\text{col}}^2, d_{\text{col}}^3\})$. To achieve this efficiency, GPTQ incorporates several practical optimizations: weights are processed in blocks of 128 columns through lazy batch updates, with modifications accumulated and applied globally after each block completion. Additionally, Cholesky decomposition is used to compute Hessian inverse information upfront, ensuring numerical stability for large models. The Hessian matrix is computed as $H = 2XX^T + \lambda I$, where $\lambda$ represents a damping factor for numerical stability.
+The core innovation of GPTQ lies in its three-step algorithmic approach that enables scalability to billion-parameter models.
 
-In our compression pipeline, quantization serves as the fourth stage, applied after pruning and LoRA adaptation phases. This ordering strategically leverages the reduced parameter count from pruning while ensuring the model maintains reasonable performance levels before the additional approximation introduced by quantization. The calibration process utilizes 128 random samples from the training dataset, each containing 2048 tokens, providing sufficient statistical information for accurate quantization while maintaining computational efficiency.
+The first step demonstrates that arbitrary quantization order suffices. Unlike other quantization techniques which greedily selects weights based on quantization error, GPTQ demonstrates that quantizing weights in any fixed order yields comparable results for large, heavily-parametrized layers. This insight allows all rows of the weight matrix to be quantized in the same column order, reducing the overall computational complexity.
 
-For practical implementation, we employed the GPTQModel PyTorch toolkit \cite{gptqmodel}, which significantly simplifies the quantization process by providing optimized implementations of the GPTQ algorithm with support for various model architectures and quantization configurations. This toolkit handles the complex numerical computations and memory management required for large-scale quantization, allowing focus on the integration aspects within the broader compression pipeline.
+The second step consists on the implementation of lazy batch updates. To address memory bandwidth bottlenecks, GPTQ processes weights in blocks of $B=128$ columns simultaneously. The algorithm exploits the observation that quantization decisions for column $i$ are only affected by updates to that specific column, enabling ``lazy batching" where updates are accumulated within blocks before global application:
+\begin{equation}
+\delta_F = -(w_Q - \text{quant}(w_Q))([H_F^{-1}]_{QQ})^{-1}(H_F^{-1})_{:,Q}
+\end{equation}
+\begin{equation}
+H_{-Q}^{-1} = \left[H^{-1} - H_{:,Q}^{-1}([H^{-1}]_{QQ})^{-1}H_{Q,:}^{-1}\right]_{-Q}
+\end{equation}
+where $Q$ denotes the set of quantized weight indices within the current block, $F$ represents remaining full-precision weights, $\delta_F$ is the compensation update applied to unquantized weights to minimize reconstruction error, and $H_{-Q}^{-1}$ is the updated inverse Hessian matrix with rows and columns corresponding to quantized weights $Q$ removed.
 
-For LLaMA 3.2 1B, 4-bit quantization reduces memory requirements from approximately 2GB to 500MB while typically maintaining perplexity increases below 0.5 points on standard language modeling benchmarks. This substantial compression ratio, combined with minimal performance degradation, demonstrates the effectiveness of the GPTQ approach for maintaining model quality while achieving significant memory savings suitable for deployment on resource-constrained hardware.
+The final step is the Cholesky reformulation. For numerical stability at scale, GPTQ precomputes Hessian inverse information using Cholesky decomposition rather than iterative matrix updates. The Hessian matrix is computed as:
+\begin{equation}
+H = 2XX^T + \lambda I
+\end{equation}
+where $\lambda$ represents a damping factor (1\% of average diagonal value) for numerical stability. The Cholesky decomposition $H^{-1} = LL^T$ provides numerically stable access to required matrix rows while avoiding the accumulation of errors from repeated matrix inversions that plagued the older approaches when applied to large models.
+
+The quantization procedure processes each layer independently, iterating through weight columns while maintaining compensation updates to remaining unquantized weights, and is applied to the attention matrices and linear layers of the Transformer.
+
+In our compression pipeline, quantization serves as the fourth stage, applied after pruning and LoRA adaptation phases, to strategically leverage the reduced parameter count from pruning. Regarding the practical implementation, we employed the GPTQModel toolkit \cite{gptqmodel}, which provides optimized implementations of the GPTQ algorithm with support for various model architectures and quantization configurations. This toolkit handles the complex numerical computations and memory management required for large-scale quantization, allowing focus on the integration aspects within the broader compression pipeline.
 
 \subsection{Eigenspace Low-Rank Approximation (EoRA)} \label{eora}
 
@@ -171,7 +186,7 @@ Following quantization, Eigenspace Low-Rank Approximation (EoRA) \cite{eora} can
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.7\textwidth]{eora.png}
-    \caption[EoRA Representation]{The image summarizes the EoRA process in a schematic way, courtesy of \cite{eora}.}
+    \caption[EoRA Overview]{The image summarizes the EoRA process in a schematic way, courtesy of \cite{eora}.}
     \label{fig:eora}
 \end{figure}
 

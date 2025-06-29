@@ -159,7 +159,7 @@ This section examines some techniques that have proven effective for compressing
 
 \subsection{Knowledge Distillation} \label{distillation_paragraph}
 
-Knowledge distillation \cite{distillation} has emerged as a fundamental technique for compressing pre-trained language models by transferring knowledge from a large "teacher" model to a smaller "student" model. In particular, the core principle involves training the student to match not only the ground truth labels but also the soft predictions of the teacher model, in order to capture richer information about the decision boundaries learned by the larger network.
+Knowledge distillation \cite{distillation} has emerged as a fundamental technique for compressing pre-trained language models by transferring knowledge from a large ``teacher" model to a smaller ``student" model. In particular, the core principle involves training the student to match not only the ground truth labels but also the soft predictions of the teacher model, in order to capture richer information about the decision boundaries learned by the larger network.
 
 Traditional distillation approaches can be categorized into task-specific and task-agnostic variants. Task-specific distillation first fine-tunes the teacher model on a particular downstream task before distillation, while task-agnostic distillation maintains a general-purpose student that can be efficiently adapted to various tasks.
 
