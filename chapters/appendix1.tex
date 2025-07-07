@@ -1,2 +1,206 @@
-\section{}
-\section{}
+This appendix provides comprehensive experimental results across all tested configurations, including intermediate compression stages and generation examples that illustrate qualitative performance changes.
+
+\section{Pruning-Only Configurations}
+
+This section examines models that have undergone only pruning operations (depth and width pruning) without additional optimization techniques.
+
+\subsection{Benchmark Results}
+
+{\footnotesize
+\begin{longtable}{lcccccc}
+\caption{Performance Results for Fully Optimized Configurations} \label{tab:full_pipeline_results} \\
+\hline
+\textbf{Config} & \multicolumn{2}{c}{\textbf{TriviaQA (\%)}} & & \textbf{WikiText} & \textbf{\#Params} & \textbf{Size} \\
+\cline{2-3}
+& \textbf{Closed} & \textbf{Open} & & \textbf{PPL} & & \textbf{(GB)} \\
+\hline
+\endfirsthead
+
+\multicolumn{7}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline
+\textbf{Config} & \multicolumn{2}{c}{\textbf{TriviaQA (\%)}} & & \textbf{WikiText} & \textbf{\#Params} & \textbf{Size} \\
+\cline{2-3}
+& \textbf{Closed} & \textbf{Open} & & \textbf{PPL} & & \textbf{(GB)} \\
+\hline
+\endhead
+
+\hline \multicolumn{7}{r}{{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+
+Baseline & 40.2 & 77.8 & & 20.05 & 1235.8M & 2.30 \\
+Baseline Instruct & 50.6 & 81.8 & & 26.61 & 1235.8M & 2.30 \\
+Depth 2 & 20.0 & 53.0 & & 55.24 & 1114.2M & 2.08 \\
+Depth 4 & 5.6 & 14.2 & & 230.77 & 992.5M & 1.85 \\
+Depth 6 & 2.0 & 2.4 & & 2081.04 & 870.9M & 1.62 \\
+Depth 8 & 1.2 & 1.4 & & 227734.90 & 749.2M & 1.40 \\
+Width 1:2 & 1.8 & 2.2 & & 471.66 & 749.3M & 2.30 \\
+Width 2:4 & 7.0 & 17.2 & & 161.10 & 749.3M & 2.30 \\
+Width 3:4 & 0.4 & 0.2 & & 10734.84 & 506.0M & 2.30 \\
+Width 1:8 & 47.8 & 80.8 & & 27.19 & 1114.2M & 2.30 \\
+Width 4:8 & 12.6 & 42.4 & & 81.32 & 749.3M & 2.30 \\
+Width 6:8 & 0.2 & 0.2 & & 3075.58 & 506.0M & 2.30 \\
+Width 1:16 & 49.2 & 81.8 & & 26.77 & 1175.0M & 2.30 \\
+Width 8:16 & 16.2 & 52.8 & & 64.08 & 749.3M & 2.30 \\
+Width 12:16 & 0.2 & 0.2 & & 1793.97 & 506.0M & 2.30 \\
+Depth 2 + Width 1:2 & 0.4 & 0.4 & & 694.34 & 688.4M & 2.08 \\
+Depth 2 + Width 2:4 & 3.8 & 5.0 & & 309.32 & 688.4M & 2.08 \\
+Depth 2 + Width 3:4 & 0.2 & 0.2 & & 38058.32 & 475.6M & 2.08 \\
+Depth 2 + Width 1:8 & 20.2 & 53.6 & & 57.22 & 1007.7M & 2.08 \\
+Depth 2 + Width 4:8 & 6.4 & 15.2 & & 185.43 & 688.4M & 2.08 \\
+Depth 2 + Width 6:8 & 0.6 & 1.0 & & 18260.58 & 475.6M & 2.08 \\
+Depth 2 + Width 1:16 & 19.6 & 51.6 & & 55.68 & 1061.0M & 2.08 \\
+Depth 2 + Width 8:16 & 7.6 & 23.4 & & 139.97 & 688.4M & 2.08 \\
+Depth 2 + Width 12:16 & 0.2 & 0.4 & & 2589.90 & 475.6M & 2.08 \\
+Depth 4 + Width 1:2 & 0.6 & 0.2 & & 3124.02 & 627.6M & 1.85 \\
+Depth 4 + Width 2:4 & 1.0 & 2.2 & & 1167.36 & 627.6M & 1.85 \\
+Depth 4 + Width 3:4 & 0.8 & 0.2 & & 87799.62 & 445.2M & 1.85 \\
+Depth 4 + Width 1:8 & 5.2 & 14.8 & & 244.69 & 901.3M & 1.85 \\
+Depth 4 + Width 4:8 & 3.0 & 2.6 & & 774.60 & 627.6M & 1.85 \\
+Depth 4 + Width 6:8 & 0.2 & 0.2 & & 63239.70 & 445.2M & 1.85 \\
+Depth 4 + Width 1:16 & 4.6 & 14.6 & & 235.32 & 946.9M & 1.85 \\
+Depth 4 + Width 8:16 & 2.6 & 6.2 & & 591.59 & 627.6M & 1.85 \\
+Depth 4 + Width 12:16 & 1.0 & 0.6 & & 119073.95 & 445.2M & 1.85 \\
+Depth 6 + Width 1:2 & 0.6 & 0.8 & & 19899.25 & 566.8M & 1.62 \\
+Depth 6 + Width 2:4 & 1.0 & 1.0 & & 20371.15 & 566.8M & 1.62 \\
+Depth 6 + Width 3:4 & 0.4 & 0.6 & & 648756.35 & 414.8M & 1.62 \\
+Depth 6 + Width 1:8 & 2.0 & 1.6 & & 2376.63 & 794.9M & 1.62 \\
+Depth 6 + Width 4:8 & 0.8 & 1.0 & & 77482.90 & 566.8M & 1.62 \\
+Depth 6 + Width 6:8 & 0.2 & 0.2 & & 108418.06 & 414.8M & 1.62 \\
+Depth 6 + Width 1:16 & 1.8 & 1.6 & & 2032.84 & 832.9M & 1.62 \\
+Depth 8 + Width 1:2 & 0.4 & 0.2 & & 111859.62 & 506.0M & 1.40 \\
+Depth 8 + Width 2:4 & 0.6 & 0.4 & & 185871.81 & 506.0M & 1.40 \\
+Depth 8 + Width 3:4 & 0.4 & 0.4 & & 1044840.71 & 384.3M & 1.40 \\
+Depth 8 + Width 1:8 & 1.4 & 1.0 & & 224204.19 & 688.4M & 1.40 \\
+Depth 8 + Width 4:8 & 0.8 & 0.4 & & 554910.71 & 506.0M & 1.40 \\
+\end{longtable}
+}
+\normalsize
+
+\section{Fully Optimized Configurations}
+
+This section presents the quantitative results for the configurations that have undergone the complete compression pipeline, including pruning, LoRA adaptation, quantization, and EoRA compensation.
+
+\subsection{Benchmark Results}
+
+\footnotesize
+\begin{longtable}{lcclccc}
+\caption{Performance Results for All Model Configurations} \label{tab:all_results} \\
+\hline
+\textbf{Config} & \textbf{LoRA} & \textbf{Quant} & & \multicolumn{2}{c}{\textbf{TriviaQA (\%)}} & \textbf{WikiText} \\
+\cline{5-6}
+& \textbf{Type} & & & \textbf{Closed} & \textbf{Open} & \textbf{PPL} \\
+\hline
+\endfirsthead
+
+\multicolumn{7}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline
+\textbf{Config} & \textbf{LoRA} & \textbf{Quant} & & \multicolumn{2}{c}{\textbf{TriviaQA (\%)}} & \textbf{WikiText} \\
+\cline{5-6}
+& \textbf{Type} & & & \textbf{Closed} & \textbf{Open} & \textbf{PPL} \\
+\hline
+\endhead
+
+\hline \multicolumn{7}{r}{{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+Depth 2 & WikiText & No & & 28.8 & 59.3 & 21.34 \\
+Depth 2 & WikiText & Yes & & 23.2 & 53.5 & 22.89 \\
+Depth 2 & WikiText & EoRA & & 24.7 & 57.9 & 22.63 \\
+Depth 2 & TriviaQA & No & & 27.8 & 60.2 & 51.09 \\
+Depth 2 & TriviaQA & Yes & & 23.9 & 54.6 & 55.03 \\
+Depth 2 & TriviaQA & EoRA & & 24.4 & 58.4 & 54.60 \\
+Width 1:2 & WikiText & No & & 10.0 & 32.0 & 40.26 \\
+Width 1:2 & WikiText & Yes & & 9.1 & 27.3 & 42.19 \\
+Width 1:2 & WikiText & EoRA & & 8.8 & 28.3 & 41.78 \\
+Width 1:2 & TriviaQA & No & & 12.4 & 29.3 & 145.54 \\
+Width 1:2 & TriviaQA & Yes & & 11.3 & 26.5 & 154.33 \\
+Width 1:2 & TriviaQA & EoRA & & 11.7 & 25.7 & 152.53 \\
+Width 1:8 & WikiText & No & & 47.8 & 80.8 & 15.70 \\
+Width 1:8 & WikiText & Yes & & 39.0 & 74.8 & 16.85 \\
+Width 1:8 & WikiText & EoRA & & 40.0 & 78.4 & 16.68 \\
+Width 1:8 & TriviaQA & No & & 44.9 & 79.4 & 30.81 \\
+Width 1:8 & TriviaQA & Yes & & 41.3 & 77.2 & 33.38 \\
+Width 1:8 & TriviaQA & EoRA & & 42.0 & 77.2 & 32.86 \\
+Width 4:8 & WikiText & No & & 17.0 & 51.1 & 26.04 \\
+Width 4:8 & WikiText & Yes & & 15.7 & 45.3 & 27.40 \\
+Width 4:8 & TriviaQA & No & & 19.0 & 56.8 & 64.33 \\
+Width 4:8 & TriviaQA & Yes & & 17.7 & 57.1 & 67.95 \\
+Width 8:16 & WikiText & No & & 19.4 & 56.3 & 24.04 \\
+Width 8:16 & WikiText & Yes & & 17.5 & 52.1 & 25.39 \\
+Width 8:16 & WikiText & EoRA & & 17.8 & 54.9 & 25.09 \\
+Width 8:16 & TriviaQA & No & & 20.6 & 57.6 & 56.11 \\
+Width 8:16 & TriviaQA & Yes & & 20.8 & 55.7 & 60.67 \\
+Width 8:16 & TriviaQA & EoRA & & 21.3 & 54.0 & 59.73 \\
+Depth 2 Wanda 1:16 & WikiText & No & & 28.1 & 61.8 & 21.42 \\
+Depth 2 Wanda 1:16 & WikiText & Yes & & 22.9 & 55.8 & 23.03 \\
+Depth 2 Wanda 1:16 & WikiText & EoRA & & 23.3 & 57.3 & 22.72 \\
+Depth 2 Wanda 1:16 & TriviaQA & No & & 28.0 & 59.5 & 50.99 \\
+Depth 2 Wanda 1:16 & TriviaQA & Yes & & 25.2 & 56.3 & 55.46 \\
+Depth 2 Wanda 1:16 & TriviaQA & EoRA & & 24.8 & 57.4 & 54.81 \\
+Depth 2 Wanda 1:8 & WikiText & No & & 26.5 & 63.8 & 21.76 \\
+Depth 2 Wanda 1:8 & WikiText & Yes & & 24.8 & 58.1 & 23.21 \\
+Depth 2 Wanda 1:8 & WikiText & EoRA & & 22.3 & 59.6 & 22.98 \\
+Depth 2 Wanda 1:8 & TriviaQA & No & & 27.4 & 60.4 & 51.89 \\
+Depth 2 Wanda 1:8 & TriviaQA & Yes & & 24.0 & 54.8 & 54.81 \\
+Depth 2 Wanda 1:8 & TriviaQA & EoRA & & 24.3 & 58.3 & 55.46 \\
+Depth 2 Wanda 2:4 & WikiText & No & & 11.5 & 31.3 & 39.33 \\
+Depth 2 Wanda 2:4 & WikiText & Yes & & 10.6 & 30.8 & 41.54 \\
+Depth 2 Wanda 2:4 & WikiText & EoRA & & 10.4 & 29.8 & 40.73 \\
+Depth 2 Wanda 2:4 & TriviaQA & No & & 11.1 & 29.6 & 146.68 \\
+Depth 2 Wanda 2:4 & TriviaQA & Yes & & 11.6 & 29.4 & 157.98 \\
+Depth 2 Wanda 2:4 & TriviaQA & EoRA & & 11.2 & 28.4 & 154.33 \\
+Depth 2 Wanda 3:4 & WikiText & No & & 1.2 & 5.3 & 134.60 \\
+Depth 2 Wanda 3:4 & WikiText & Yes & & 1.3 & 5.8 & 139.97 \\
+Depth 2 Wanda 3:4 & WikiText & EoRA & & 0.8 & 5.2 & 136.72 \\
+Depth 2 Wanda 3:4 & TriviaQA & No & & 2.1 & 0.5 & 3148.52 \\
+Depth 2 Wanda 3:4 & TriviaQA & Yes & & 2.3 & 0.7 & 3980.10 \\
+Depth 2 Wanda 3:4 & TriviaQA & EoRA & & 2.1 & 0.7 & 3431.06 \\
+Depth 2 Wanda 4:8 & WikiText & No & & 11.8 & 44.0 & 34.10 \\
+Depth 2 Wanda 4:8 & WikiText & Yes & & 10.6 & 42.6 & 35.81 \\
+Depth 2 Wanda 4:8 & TriviaQA & No & & 14.7 & 45.0 & 116.95 \\
+Depth 2 Wanda 4:8 & TriviaQA & Yes & & 13.8 & 43.0 & 124.98 \\
+Depth 4 Wanda 1:16 & WikiText & No & & 18.1 & 53.2 & 29.51 \\
+Depth 4 Wanda 1:16 & WikiText & Yes & & 15.2 & 48.6 & 31.66 \\
+Depth 4 Wanda 1:16 & TriviaQA & No & & 18.7 & 47.3 & 89.32 \\
+Depth 4 Wanda 2:4 & WikiText & No & & 7.7 & 27.0 & 49.71 \\
+Depth 4 Wanda 2:4 & WikiText & Yes & & 7.2 & 25.8 & 52.20 \\
+Depth 4 Wanda 2:4 & WikiText & EoRA & & 7.6 & 26.3 & 51.19 \\
+Depth 4 Wanda 2:4 & TriviaQA & No & & 9.6 & 15.9 & 298.63 \\
+Depth 4 Wanda 2:4 & TriviaQA & Yes & & 8.5 & 16.4 & 319.14 \\
+Depth 4 Wanda 2:4 & TriviaQA & EoRA & & 8.6 & 17.3 & 308.11 \\
+Depth 4 Wanda 3:4 & WikiText & No & & 0.8 & 4.3 & 156.76 \\
+Depth 4 Wanda 3:4 & WikiText & Yes & & 1.1 & 4.6 & 164.28 \\
+Depth 4 Wanda 3:4 & TriviaQA & No & & 1.7 & 0.5 & 3652.35 \\
+Depth 4 Wanda 3:4 & TriviaQA & Yes & & 1.9 & 0.3 & 4545.42 \\
+Depth 4 Wanda 4:8 & WikiText & No & & 8.9 & 33.2 & 44.04 \\
+Depth 4 Wanda 4:8 & WikiText & Yes & & 8.2 & 29.6 & 46.34 \\
+Depth 4 Wanda 4:8 & WikiText & EoRA & & 8.3 & 31.1 & 45.53 \\
+Depth 4 Wanda 4:8 & TriviaQA & No & & 10.5 & 20.8 & 210.94 \\
+Depth 4 Wanda 4:8 & TriviaQA & Yes & & 11.1 & 19.1 & 226.30 \\
+Depth 4 Wanda 4:8 & TriviaQA & EoRA & & 11.6 & 18.0 & 219.34 \\
+Depth 6 Wanda 1:16 & WikiText & No & & 11.5 & 25.6 & 37.82 \\
+Depth 6 Wanda 1:16 & WikiText & Yes & & 9.6 & 22.8 & 40.73 \\
+Depth 6 Wanda 1:16 & WikiText & EoRA & & 9.4 & 24.8 & 39.63 \\
+Depth 6 Wanda 1:16 & TriviaQA & No & & 16.8 & 27.5 & 310.53 \\
+Depth 6 Wanda 1:16 & TriviaQA & Yes & & 14.6 & 25.8 & 269.79 \\
+Depth 6 Wanda 1:16 & TriviaQA & EoRA & & 15.8 & 25.4 & 292.86 \\
+Depth 6 Wanda 4:8 & WikiText & No & & 0.9 & 9.6 & 55.46 \\
+Depth 6 Wanda 4:8 & WikiText & Yes & & 2.1 & 10.7 & 58.80 \\
+Depth 6 Wanda 4:8 & TriviaQA & No & & 8.9 & 16.2 & 568.93 \\
+Depth 6 Wanda 4:8 & TriviaQA & Yes & & 7.5 & 14.0 & 515.99 \\
+Depth 8 Wanda 3:4 & WikiText & No & & 0.2 & 1.3 & 278.36 \\
+Depth 8 Wanda 3:4 & WikiText & Yes & & 0.5 & 1.3 & 289.45 \\
+Depth 8 Wanda 3:4 & TriviaQA & No & & 0.3 & 0.3 & 7263.56 \\
+Depth 8 Wanda 3:4 & TriviaQA & Yes & & 0.8 & 0.2 & 9326.59 \\
+
+\end{longtable}
+\normalsize
+
+\subsection{Examples of Text Generation}

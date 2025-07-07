@@ -1,3 +1,5 @@
+% Chapter 3: Methodology
+
 Having covered the importance of LLM optimization and the technical architecture of transformers in previous chapters, we now turn to the practical challenge of model compression.
 
 The following sections begin with preliminary experiments on layer manipulation that revealed crucial insights about architectural redundancy in transformer models and shaped the main compression strategy. It then presents what is possibly the heart of this research: a multi-stage pipeline that combines several optimization techniques in a structured sequence. Each stage is examined with both theoretical foundations and key implementation considerations. Finally, the evaluation framework is outlined along with the chosen metrics and benchmarks.
@@ -231,7 +233,7 @@ Perplexity serves as the fundamental metric for language model evaluation, measu
 where $N$ represents the total number of tokens, $w_i$ denotes the $i$-th token, and $P(w_i | w_1, w_2, \ldots, w_{i-1})$ represents the model's predicted probability for the correct next token given the preceding context.
 Lower perplexity values indicate better language modeling performance, with the metric providing intuitive interpretation: a perplexity of $X$ means the model is, on average, as confused as if it had to choose uniformly among $X$ possibilities for each token.
 
-The evaluation protocol processes the WikiText-2 test split by accumulating negative log-likelihoods across all valid tokens before computing the final exponential transformation. The implementation iterates through sequences, computing cross-entropy loss for each token while applying attention masks to exclude padding tokens from the calculation, ensuring that only meaningful content contributes to the perplexity measurement.
+The evaluation protocol processes the whole WikiText-2 test split (trimmed to 512 sequence length) by accumulating negative log-likelihoods across all valid tokens before computing the final exponential transformation. The implementation iterates through sequences, computing cross-entropy loss for each token while applying attention masks to exclude padding tokens from the calculation, ensuring that only meaningful content contributes to the perplexity measurement.
 
 \subsection{TriviaQA Question-Answering Evaluation}
 
