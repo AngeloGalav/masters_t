@@ -68,4 +68,14 @@ In other words, optimization is a pathway toward environmentally sustainable, pr
 
 
 \section{Document Structure}
-Will write this when the document is finished.
+This thesis is organized into five chapters that progressively build from foundational concepts to practical implementation and evaluation.
+
+Chapter 1 establishes the motivation for LLM compression by examining the environmental and social impacts of large-scale language models. It essentially outlines the main objective of the work presented in this thesis.
+
+Chapter 2 provides the technical background, tracing the evolution from RNN-based models to transformer architectures with focus on the attention mechanism. It introduces the LLaMA model family, examines representative target hardware constraints, and reviews related work in optimization techniques.
+
+Chapter 3 presents the core methodology of the five-stage compression pipeline: depth pruning, width pruning using WANDA, LoRA adaptation, quantization through GPTQ, and EoRA compensation. The evaluation framework using WikiText-2 and TriviaQA benchmarks is also described.
+
+Chapter 4 analyzes experimental results across different model configurations. Key findings include the effectiveness of recovery methods and identification of performance thresholds.
+
+Chapter 5 concludes the work by summarizing the key insights from the experiments while outlining future directions, including knowledge distillation integration and broader architectural compatibility.

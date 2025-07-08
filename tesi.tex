@@ -71,7 +71,13 @@
 \begin{abstract}
 	\setcounter{page}{3}
 	\pagenumbering{roman}
-	Pending
+{	\small
+	Large Language Models have transformed our interaction with technology, yet their massive scale introduces major drawbacks. Their substantial energy consumption and water usage create environmental pressures, while cloud-based architectures limit user autonomy and enable pervasive data collection. Additionally, their resource-intensive nature leads to entirely different challenges for edge deployment, where memory constraints and computational limitations make standard LLMs impractical.
+
+	This thesis presents a comprehensive compression pipeline that systematically combines multiple optimization strategies, beginning with the compact LLaMA 3.2 1B Instruct as the foundation model: depth pruning removes redundant transformer layers based on importance metrics, width pruning applies structured sparsity to attention matrices using the WANDA algorithm, Low-Rank Adaptation recovers performance while enabling task-specific fine-tuning, 4-bit quantization further reduces memory footprint through GPTQ, and Eigenspace Low-Rank Approximation provides training-free accuracy recovery.
+
+	The experimental evaluation demonstrates that integrating multiple optimization techniques can significantly decrease memory footprint while preserving core language functionality. Recovery procedures, particularly LoRA adaptation, prove highly effective at restoring capabilities lost during pruning and mitigating performance degradation. However, applying these methods beyond specific thresholds leads to rapid deterioration that even recovery procedures cannot fully address, indicating fundamental architectural limits to transformer compression.
+	}
 \end{abstract}
 \clearpage{\pagestyle{empty}\cleardoublepage}
 \selectlanguage{english}
@@ -80,7 +86,7 @@
 \addtocontents{toc}{\protect\thispagestyle{empty}}
 \listoffigures
 \clearpage{\pagestyle{empty}\cleardoublepage}
-
+\listoftables
 \clearpage{\pagestyle{empty}\cleardoublepage}
 \pagenumbering{arabic}
 
