@@ -117,7 +117,7 @@ The structured pruning process each layer by organizing weights into groups of $
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.4\textwidth]{lora.png}
-    \caption[LoRA Overview]{A summary of the LoRA process. We can see how the original pre-trained weights and the low-rank adapter are summed when the output activation is computed. The image was retrieved from the original LoRA paper \cite{lora}.}
+    \caption[LoRA Overview]{A summary of the LoRA training process. We can see how the original pre-trained weights and the low-rank adapter are summed when the output activation is computed. The image was retrieved from the original LoRA paper \cite{lora}.}
     \label{fig:lora}
 \end{figure}
 
@@ -211,7 +211,7 @@ Similarly to LoRA, the forward pass on the compensated model becomes:
 h = \hat{W}X + B'A'(Q')^{-1}X = \hat{W}X + B'AX
 \end{equation}
 
-In the default configuration of the pipeline, the EoRA calibration step uses 64 samples from the C4 dataset \cite{c4}. This minimal calibration requirement is one of the main advantages of this method. Implementation once again leverages the GPTQModel toolkit \cite{gptqmodel}, which integrates EoRA compensation with existing quantized models.
+Implementation utilizes the GPTQModel toolkit \cite{gptqmodel}, which integrates EoRA compensation with existing quantized models. In the default configuration of the pipeline, the EoRA calibration step uses 64 samples from the C4 dataset \cite{c4}. This minimal calibration requirement represents one of the key advantages of this approach. Additionally, the adapter is generated using a rank of 32. Although the original paper employed a rank of 128 \cite{eora}, the GPTQModel documentation indicates that larger ranks can cause overfitting while obviously consuming more memory \cite{gptqmodel}. This issue may be particularly pronounced for smaller 1B models such as the one adopted in this work.
 
 
 \section{Evaluation} \label{evaluation}
