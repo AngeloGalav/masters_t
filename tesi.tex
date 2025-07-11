@@ -21,6 +21,7 @@
 \usepackage{multirow}
 \usepackage{longtable}
 \usepackage{url}
+\usepackage{adjustbox}
 
 \urlstyle{tt}  % or \urlstyle{tt} for typewriter font
 \def\UrlBreaks{\do\/\do-\do_\do.\do?\do&\do=}
@@ -74,9 +75,9 @@
 {	\small
 	Large Language Models have transformed our interaction with technology, yet their massive scale introduces major drawbacks. Their substantial energy consumption and water usage create environmental pressures, while cloud-based architectures limit user autonomy and enable pervasive data collection. Additionally, their resource-intensive nature leads to entirely different challenges for edge deployment, where memory constraints and computational limitations make standard LLMs impractical.
 
-	This thesis presents a comprehensive compression pipeline that systematically combines multiple optimization strategies, beginning with the compact LLaMA 3.2 1B Instruct as the foundation model: depth pruning removes redundant transformer layers based on importance metrics, width pruning applies structured sparsity to attention matrices using the WANDA algorithm, Low-Rank Adaptation recovers performance while enabling task-specific fine-tuning, 4-bit quantization further reduces memory footprint through GPTQ, and Eigenspace Low-Rank Approximation provides training-free accuracy recovery.
+	This thesis presents a comprehensive compression pipeline that systematically applies multiple optimization strategies to the compact LLaMA 3.2 1B Instruct model: depth pruning removes redundant transformer layers based on importance metrics, width pruning applies structured sparsity to attention matrices using the WANDA algorithm, Low-Rank Adaptation recovers performance while enabling task-specific fine-tuning, 4-bit quantization further reduces memory footprint through GPTQ, and Eigenspace Low-Rank Approximation provides training-free accuracy recovery.
 
-	The experimental evaluation demonstrates that integrating multiple optimization techniques can significantly decrease memory footprint while preserving core language functionality. Recovery procedures, particularly LoRA adaptation, prove highly effective at restoring capabilities lost during pruning and mitigating performance degradation. However, applying these methods beyond specific thresholds leads to rapid deterioration that even recovery procedures cannot fully address, indicating fundamental architectural limits to transformer compression.
+	The experimental evaluation demonstrates that integrating multiple optimization techniques can significantly decrease memory footprint while preserving core language functionality. LoRA adaptation proves particularly effective at recovering capabilities lost during aggressive pruning. However, compression beyond specific thresholds leads to rapid performance deterioration that recovery procedures cannot fully mitigate, revealing fundamental architectural limits in transformer compression.
 	}
 \end{abstract}
 \clearpage{\pagestyle{empty}\cleardoublepage}
@@ -133,7 +134,7 @@ After this long journey, I can't believe I'm finally closing this chapter of my 
 
 Now, shifting focus to the people who made this possible. The following section is for those I want to thank and who I'm incredibly grateful to know. Buckle up, because this is gonna be a long one.
 
-I want to thank Professor Conti, who supervised this thesis and shared invaluable insights on model optimization best practices. We're perfectly aligned in our vision, since model optimization is a topic I hold very dear to my heart.
+I want to thank Professor Conti, who supervised this thesis and shared invaluable insights on the best practices for model optimization. We're perfectly aligned in our vision, since making AI efficient is a topic I hold very dear to my heart.
 
 Next, I want to thank Luca Bompani, an amazing co-supervisor. He helped me a lot with both the thesis and the project, while also welcoming my ideas and providing valuable criticism when I was at my peak Dunning-Kruger, which I greatly appreciated.
 

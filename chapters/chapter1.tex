@@ -35,17 +35,17 @@ These environmental costs scale directly with model size and usage frequency, cr
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
         \includegraphics[width=\textwidth]{medium-size-consumption.png}
-        \caption{Energy consumption for a small query (100 input tokens, 300 output tokens).}
+        \caption{Energy consumption estimates for a small query (100 input tokens, 300 output tokens).}
         \label{fig:energy_consumption_small}
     \end{subfigure}
     \vskip 1em
     \begin{subfigure}[b]{0.8\textwidth}
         \centering
         \includegraphics[width=\textwidth]{high-size-cosuption.png}
-        \caption{Energy consumption for a large query (1000 input tokens, 1000 output tokens).}
+        \caption{Energy consumption estimates for a large query (1000 input tokens, 1000 output tokens).}
         \label{fig:energy_consumption_large}
     \end{subfigure}
-    \caption[Comparison of the Energy Consumption of Various LLMs]{Comparison of the energy consumption of different LLMs for small and large queries. The data highlights the significant increase in energy requirements as query size grows. These graphs have been sourced from \cite{hungry_ai}.}
+    \caption[Comparison of the Energy Consumption of Various LLMs]{Comparison of the estimated energy consumption of different LLMs for small and large queries. The data highlights the significant increase in energy requirements as query size grows. These graphs have been sourced from \cite{hungry_ai}.}
     \label{fig:energy_consumption}
 \end{figure}
 
@@ -57,7 +57,7 @@ Given the context, the objective of this project is to push the boundaries of me
 
 Pruning allows us to remove redundant layers or neurons from the network architecture, trimming excess capacity without substantial loss of capability. Quantization reduces the bit-width of model weights and activations, decreasing both memory usage and compute requirements. LoRA, meanwhile, introduces a lightweight, parameter-efficient training mechanism that reduces the cost of fine-tuning and adaptation without (necessarily) modifying the base model weights. In this way, the model can be adapted to new tasks or domains with minimal overhead.
 
-The reason behind the focus on maximizing memory efficiency is related to the fact that memory represents the most expensive constraint in our target deployment scenario, where the intended hardware platform consists of a low-power RISC-V SoC with severely constrained memory resources (further details on the target hardware can be found in Section \ref{target_hardware}). Crucially, optimizations that reduce memory footprint also translate directly into computational complexity improvements, creating a dual benefit for resource-constrained environments.
+The reason behind the focus on maximizing memory efficiency is related to the fact that memory represents the most expensive constraint in our ideal target deployment scenario, where the hardware typically consists of a low-power RISC-V SoC with severely constrained, albeit exceptionally fast, memory resources (further details on the representative target hardware can be found in Section \ref{target_hardware}). Such specialized architectures are designed to address the fundamental challenges of local AI deployment, prioritizing privacy preservation and energy efficiency over raw computational power. These systems achieve efficient on-device inference through purpose-built hardware components, including dedicated neural processing units and optimized memory hierarchies that maximize bandwidth while minimizing power consumption. The underlying philosophy mirrors this thesis in its commitment to enabling practical local AI execution, though through a fundamentally different approach: while the hardware focuses on architectural innovations and specialized silicon design, this work tackles the same deployment challenges through algorithmic model optimization. Crucially, optimizations that reduce memory footprint also translate directly into computational complexity improvements, creating a dual benefit for resource-constrained environments.
 
 \subsection{How Can Optimization Techniques Help?}
 Optimization techniques increase the efficiency of models, reducing per-query energy consumption and tackling the environmental, social, and infrastructural problems that come with large-scale LLMs. Smaller models can run on edge devices and other energy-efficient hardware, cutting down on electricity usage substantially. This efficiency boost also extends the useful life of older devices: hardware that might otherwise be considered obsolete can suddenly run modern LLMs, which helps reduce electronic waste and makes better use of existing resources.

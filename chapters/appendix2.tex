@@ -1,6 +1,8 @@
-This appendix examines the effects of applying LoRA adaptation earlier in the compression pipeline, specifically after depth pruning but before width pruning. The modified sequence potentially allows adaptation benefits to persist through subsequent compression stages, while mitigating the interference between LoRA weight modifications and WANDA's importance-based pruning decisions.
+This appendix examines the effects of applying LoRA adaptation earlier in the compression pipeline, specifically after depth pruning but before width pruning. The modified sequence decouples depth and width pruning, while mitigating the interference between LoRA weight modifications and WANDA's importance-based pruning decisions.
 
 \subsection{Experimental Results}
+[explain here time constraints and how they did not allow for extensive experiments]
+
 \begin{center}
 \captionof{table}{Performance Comparison: Standard vs. Early LoRA Integration}
 \label{tab:lora_positioning}
@@ -17,33 +19,3 @@ Early & Pre-Width & XX.X & XX.X & & XX.XX \\
 \hline
 \end{tabular}
 \end{center}
-
-\subsection{Generation Examples}
-
-The following examples illustrate qualitative differences between the two LoRA positioning strategies:
-
-\textbf{Prompt:} "Explain the concept of photosynthesis in simple terms."
-
-\textbf{Standard Pipeline Output:}
-\begin{quote}
-Photosynthesis is the process where plants make food using sunlight. Plants take in carbon dioxide from air and water from soil. The green parts of plants, called chlorophyll, capture sunlight energy. This energy helps plants combine the carbon dioxide and water to make sugar, which is their food. Oxygen is released as a byproduct.
-\end{quote}
-
-\textbf{Early LoRA Integration Output:}
-\begin{quote}
-Photosynthesis is the remarkable process by which plants convert sunlight into chemical energy. Plants absorb carbon dioxide from the atmosphere and water through their roots. Chlorophyll, the green pigment in plant leaves, captures light energy and uses it to transform these simple molecules into glucose sugar. This process not only feeds the plant but also produces oxygen as a beneficial byproduct that all living organisms depend on.
-\end{quote}
-
-\textbf{Prompt:} "What is the capital of France?"
-
-\textbf{Standard Pipeline Output:}
-\begin{quote}
-Paris is the capital of France.
-\end{quote}
-
-\textbf{Early LoRA Integration Output:}
-\begin{quote}
-The capital of France is Paris, which is also the country's largest city and serves as its political, economic, and cultural center.
-\end{quote}
-
-The early LoRA integration consistently produces 
