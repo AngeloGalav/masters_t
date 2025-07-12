@@ -11,6 +11,6 @@
 \addvspace {10\p@ }
 \contentsline {table}{\numberline {A.1}{\ignorespaces Results for Pruning-Only Configurations}}{69}{table.A.1}%
 \contentsline {table}{\numberline {A.2}{\ignorespaces Results for Complete Pipeline Configurations}}{71}{table.A.2}%
-\contentsline {table}{\numberline {A.3}{\ignorespaces Text Generation Examples}}{75}{table.A.3}%
+\contentsline {table}{\numberline {A.3}{\ignorespaces Text Generation Examples}}{74}{table.A.3}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {B.1}{\ignorespaces Performance Comparison: Standard vs. Early LoRA Integration}}{81}{table.B.1}%
+\contentsline {table}{\numberline {B.1}{\ignorespaces Performance Comparison: Standard vs. Early LoRA Integration}}{77}{table.B.1}%

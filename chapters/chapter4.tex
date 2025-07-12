@@ -83,10 +83,10 @@ Ultimately, performance of models with combined configurations, without recovery
 
 Of the 42 pruned-only configurations, 27 were selected to undergo LoRA fine-tuning and quantization. In particular, training was conducted separately on both WikiText and TriviaQA train datasets using 8192 samples divided into batches of 8. Additionally, 12 of these variants also underwent EoRA performance recovery to assess its effectiveness in mitigating quantization-induced degradation. Table \ref{tab:complete_pipeline_results} presents key configurations that showcase different aspects of the optimization process.
 
-{\footnotesize
+{\scriptsize
 \begin{table}[htbp]
 \centering
-\footnotesize
+\scriptsize
 \caption[Results for Complete Pipeline Configurations (Subset)]{Results for models which have undergone the complete optimization pipeline or selected steps in addition to pruning. This table presents a subset of results from the complete dataset available in Appendix \ref{app:appendix1}.} \label{tab:complete_pipeline_results}
 \begin{tabular}{lcclcccc}
 \hline

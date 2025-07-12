@@ -47,7 +47,7 @@ Attention allows a model to dynamically focus on different parts of the input se
 As such, the information bottleneck created when sequence models compress an entire input sequence into a single fixed-size vector is partially dealt with. This bottleneck becomes particularly problematic for long sequences, where important information can be lost or diluted.
 
 
-\subsection{Scaled Dot-Product Attention}
+\subsection{Scaled Dot-Product Attention} \label{attention}
 
 The attention mechanism is computed using three matrices derived from the input:
 
@@ -85,12 +85,14 @@ Given this, each head is computed as:
 \begin{equation}
 \text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
 \end{equation}
+
+Each head uses different projection matrices $W_i^Q \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $W_i^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$, and $W_i^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$, where typically $d_k = d_v = d_{\text{model}}/h$ for $h$ heads.
+
 As such, the final equation for multi-head attention is:
 \begin{equation}
-\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O
+\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W_O
 \end{equation}
-
-Each head uses different projection matrices $W_i^Q \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $W_i^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$, and $W_i^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$, where typically $d_k = d_v = d_{\text{model}}/h$ for $h$ heads. 
+where $W^O \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}}$ is the output projection matrix that transforms the concatenated multi-head output back to the original model dimension. This final projection is necessary because the concatenated heads have dimension $h \times d_v$, which must be projected back to $d_{\text{model}}$ to maintain dimensional consistency for subsequent layers.
 
 Multi-head attention essentially gives the model multiple different perspective of the same input, and it is a vital system that contributes to make this architecture so powerful.
 

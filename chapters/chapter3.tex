@@ -108,7 +108,7 @@ S_{ij} = |W_{ij}| \cdot \|X_j\|_2
 
 where $|W_{ij}|$ represents the absolute weight magnitude and $\|X_j\|_2$ evaluates the L2 norm of the $j$-th input feature across calibration samples. This formulation addresses a key limitation of traditional magnitude-based importance, which is typically used by width pruning approaches, by accounting for input activations, which play an equally important role in determining neuron outputs.
 
-The structured pruning process each layer by organizing weights into groups of $M$ consecutive elements (i.e. consecutive columns of the same row of the weight matrix) and removing the $N$ with lowest importance scores while retaining the rest. To achieve this, forward hooks collect activation statistics during calibration, with each linear layer wrapped to compute the L2 norm of input activations across samples. After computing importance scores for each weight group, the implementation uses PyTorch's scatter operations to efficiently mark low-importance weights for removal. The algorithm completes pruning in a single forward pass using the C4 corpus \cite{c4} as calibration dataset.
+The structured pruning process each layer by organizing weights into groups of $M$ consecutive elements (i.e. consecutive columns of the same row of the weight matrix) and removing the $N$ with lowest importance scores while retaining the rest. This is applied comprehensively to all linear layers in the transformer architecture, including both the feedforward networks and the attention-related projection matrices $W_Q$, $W_K$, $W_V$, and $W_O$ (see Section \ref{attention}). The activation statistics are collected by forward hooks during calibration, with each linear layer wrapped to compute the L2 norm of input activations across samples. After computing importance scores for each weight group, the implementation uses PyTorch's scatter operations to efficiently mark low-importance weights for removal. The algorithm completes pruning in a single forward pass using the C4 corpus \cite{c4} as calibration dataset.
 
 \section{Low-Rank Adaptation (LoRA)} \label{lora}
 
@@ -140,7 +140,7 @@ LoRA offers substantial reductions in trainable parameters while maintaining com
 
 Within the compression pipeline, LoRA serves as the third stage, following the pruning phases. This positioning is strategic: LoRA helps recover performance degraded by the aggressive structural modifications while simultaneously adapting the model for specific downstream tasks.
 
-The implementation utilizes Hugging Face's \textit{Parameter-Efficient Fine-Tuning} (PEFT) library \cite{peft}, which provides optimized LoRA integration with Hugging Face transformer models. The configuration targets the attention projection matrices with a rank of 8 and dropout rate of 0.1. Training employs mixed-precision optimization with gradient accumulation to maintain computational efficiency while adapting to the reduced parameter space.
+The implementation utilizes Hugging Face's \textit{Parameter-Efficient Fine-Tuning} (PEFT) library \cite{peft}, which provides optimized LoRA integration with Hugging Face transformer models. The configuration specifically targets the four attention projection matrices: query ($W_Q$), key ($W_K$), value ($W_V$), and output ($W_O$) projections (see Section~\ref{attention}) with a rank of 8 and dropout rate of 0.1. Training employs mixed-precision optimization with gradient accumulation to maintain computational efficiency while adapting to the reduced parameter space.
 
 \section{Quantization} \label{quantization}
 
