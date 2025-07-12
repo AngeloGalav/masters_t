@@ -60,7 +60,7 @@ Depth 8 + Width 6:8 & TriviaQA & & 0.3 & 0.1 & 37762.15 \\
 
 The preliminary comparison between the Depth$\rightarrow$LoRA$\rightarrow$Width (D$\rightarrow$L$\rightarrow$W) and Depth$\rightarrow$Width$\rightarrow$LoRA (D$\rightarrow$W$\rightarrow$L) pipeline orderings, as presented in Table \ref{tab:dlw_pipeline_comparison}, reveals patterns that align with theoretical expectations about the interaction between these compression techniques.
 
-As anticipated, the D$\rightarrow$W$\rightarrow$L pipeline demonstrates superior performance compared to the conventional D$\rightarrow$L$\rightarrow$W approach, particularly when width pruning becomes more aggressive. This expected advantage occurs because LoRA applied after width pruning can specifically target the recovery of capabilities lost during the more destructive width reduction phase, operating directly on the final compressed architecture.
+The D$\rightarrow$W$\rightarrow$L pipeline demonstrates superior performance compared to the conventional D$\rightarrow$L$\rightarrow$W approach, particularly when width pruning becomes more aggressive. This expected advantage stems from LoRA's ability to directly address the performance degradation caused by width pruning when applied to the compressed architecture.
 
 \begin{table}[ht]
 \centering
@@ -93,9 +93,7 @@ D8 + W1:8 & TriviaQA & 8.6 & 0.4 & 2610.21 & 8.7 & 1.3 & 132836.59 \\
 }
 \end{table}
 
-The performance advantage of D$\rightarrow$W$\rightarrow$L becomes most pronounced in heavily pruned configurations: when width pruning is severe, LoRA's recovery capabilities are fundamentally limited by the reduced parameter space, making post-compression adaptation the more effective approach.
-
-Unsurprisingly, in less aggressively pruned variants, the performance difference between the two pipeline orderings is not as significant. When width pruning ratios are conservative (such as 1:16), the destructive impact is minimal, making the sequencing order less critical for overall performance preservation.
+The performance advantage of D$\rightarrow$W$\rightarrow$L becomes most pronounced in heavily pruned configurations: when width pruning is aggressive, LoRA's ability to recover performance is severely compromised if applied first, which makes post-compression adaptation the more effective approach. On the other hand, in moderately pruned variants, the performance difference between the two pipeline orderings is not as significant. When width pruning ratios are conservative (such as 1:16), the destructive impact is minimal, thus the sequencing order becomes less critical for overall performance preservation.
 
 What is particularly surprising, however, is that the D$\rightarrow$L$\rightarrow$W pipeline still maintains relatively good performance even when LoRA fine-tuning precedes aggressive width pruning. This resilience further proves the idea, which was also presented in Chapter \ref{chap:results}, that the primary source of redundancy in these compact models lies within individual layers rather than across the layers themselves. The fact that subsequent width pruning does not catastrophically destroy the LoRA-adapted representations suggests that the intra-layer parameter space contains sufficient redundancy to absorb significant compression while preserving the essential adaptations learned during fine-tuning.
 
