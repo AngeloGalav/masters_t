@@ -1,21 +1,101 @@
 This appendix examines the effects of applying LoRA adaptation earlier in the compression pipeline, specifically after depth pruning but before width pruning. The modified sequence decouples depth and width pruning, while mitigating the interference between LoRA weight modifications and WANDA's importance-based pruning decisions.
 
 \subsection{Experimental Results}
-[explain here time constraints and how they did not allow for extensive experiments]
+The evaluation encompasses 12 different configurations tested with LoRA adapters trained on both WikiText and TriviaQA datasets. The complete results for the Depth$\rightarrow$LoRA$\rightarrow$Width pipeline are illustrated in Table \ref{tab:dlw_pipeline_results}. Although limited in scope compared to the comprehensive experiments presented in the main chapters, these preliminary results provide a foundation for future systematic investigations into optimal technique sequencing.
 
-\begin{center}
-\captionof{table}{Performance Comparison: Standard vs. Early LoRA Integration}
-\label{tab:lora_positioning}
-\small
-\begin{tabular}{llcccc}
+\footnotesize
+\begin{longtable}{lclccc}
+\caption[Results for the Depth$\rightarrow$LoRA$\rightarrow$Width Experiment]{Evaluation results for alternatively ordered Depth$\rightarrow$LoRA$\rightarrow$Width pipeline, which combines depth pruning, LoRA fine-tuning, and width pruning in sequential order.} \label{tab:dlw_pipeline_results} \\
+
 \hline
-\multirow{2}{*}{\textbf{Config}} & \multirow{2}{*}{\textbf{LoRA}} & \multicolumn{2}{c}{\textbf{TriviaQA (\%)}} & & \textbf{WikiText-2} \\
-\cline{3-4}
-& & \textbf{Closed} & \textbf{Open} & & \textbf{Perplexity} \\
+\textbf{Config} & \textbf{LoRA} & & \multicolumn{2}{c}{\textbf{TriviaQA (\%) $\uparrow$}} & \textbf{WikiText $\downarrow$} \\
+\cline{4-5}
+& \textbf{Type} & & \textbf{Closed} & \textbf{Open} & \textbf{PPL} \\
 \hline
-LLaMA-3.2-1B-Instruct & None & XX.X & XX.X & & XX.XX \\
-Standard & Post-Prun. & XX.X & XX.X & & XX.XX \\
-Early & Pre-Width & XX.X & XX.X & & XX.XX \\
+\endfirsthead
+
+\multicolumn{6}{c}%
+{{\footnotesize \bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline
+\textbf{Config} & \textbf{LoRA} & & \multicolumn{2}{c}{\textbf{TriviaQA (\%) $\uparrow$}} & \textbf{WikiText $\downarrow$} \\
+\cline{4-5}
+& \textbf{Type} & & \textbf{Closed} & \textbf{Open} & \textbf{PPL} \\
+\hline
+\endhead
+
+\hline \multicolumn{6}{r}{{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+\textit{Baseline Instruct} & \textit{No} & & \textit{50.6} & \textit{81.8} & \textit{26.61}\\
+Depth 2 + Width 1:8 & WikiText & & 26.3 & 58.8 & 21.93 \\
+Depth 2 + Width 1:8 & TriviaQA & & \textbf{28.2} & 59.3 & 52.51 \\
+Depth 2 + Width 1:16 & WikiText & & 27.6 & 59.4 & \textbf{21.42} \\
+Depth 2 + Width 1:16 & TriviaQA & & 27.2 & \textbf{59.6} & 51.29 \\
+Depth 2 + Width 4:8 & WikiText & & 8.3 & 29.9 & 49.33 \\
+Depth 2 + Width 4:8 & TriviaQA & & 9.8 & 29.3 & 139.97 \\
+Depth 2 + Width 6:8 & WikiText & & 0.3 & 0.3 & 1583.17 \\
+Depth 2 + Width 6:8 & TriviaQA & & 0.4 & 0.1 & 3652.35 \\
+Depth 6 + Width 1:8 & WikiText & & 10.7 & 22.2 & 38.87 \\
+Depth 6 + Width 1:8 & TriviaQA & & 14.6 & 24.1 & 324.16 \\
+Depth 6 + Width 1:16 & WikiText & & 11.4 & 23.6 & 37.97 \\
+Depth 6 + Width 1:16 & TriviaQA & & 15.6 & 26.1 & 347.78 \\
+Depth 6 + Width 4:8 & WikiText & & 5.3 & 12.4 & 85.89 \\
+Depth 6 + Width 4:8 & TriviaQA & & 5.9 & 5.1 & 513.98 \\
+Depth 6 + Width 6:8 & WikiText & & 0.1 & 0.3 & 3623.92 \\
+Depth 6 + Width 6:8 & TriviaQA & & 0.1 & 0.1 & 87116.36 \\
+Depth 8 + Width 1:8 & WikiText & & 5.1 & 15.3 & 58.80 \\
+Depth 8 + Width 1:8 & TriviaQA & & 8.6 & 0.4 & 2610.21 \\
+Depth 8 + Width 1:16 & WikiText & & 5.4 & 17.6 & 57.67 \\
+Depth 8 + Width 1:16 & TriviaQA & & 9.5 & 0.5 & 4270.03 \\
+Depth 8 + Width 4:8 & WikiText & & 3.6 & 10.6 & 127.94 \\
+Depth 8 + Width 4:8 & TriviaQA & & 3.3 & 2.3 & 1088.10 \\
+Depth 8 + Width 6:8 & WikiText & & 0.1 & 0.2 & 2877.98 \\
+Depth 8 + Width 6:8 & TriviaQA & & 0.3 & 0.1 & 37762.15 \\
+\end{longtable}
+\normalsize
+
+\subsection{Comparison and Brief Analysis}
+
+The preliminary comparison between the Depth$\rightarrow$LoRA$\rightarrow$Width (D$\rightarrow$L$\rightarrow$W) and Depth$\rightarrow$Width$\rightarrow$LoRA (D$\rightarrow$W$\rightarrow$L) pipeline orderings, as presented in Table \ref{tab:dlw_pipeline_comparison}, reveals patterns that align with theoretical expectations about the interaction between these compression techniques.
+
+As anticipated, the D$\rightarrow$W$\rightarrow$L pipeline demonstrates superior performance compared to the conventional D$\rightarrow$L$\rightarrow$W approach, particularly when width pruning becomes more aggressive. This expected advantage occurs because LoRA applied after width pruning can specifically target the recovery of capabilities lost during the more destructive width reduction phase, operating directly on the final compressed architecture.
+
+\begin{table}[ht]
+\centering
+\caption[Depth$\rightarrow$LoRA$\rightarrow$Width vs. Depth$\rightarrow$Width$\rightarrow$LoRA]{Comparison of pruning pipeline orders: Depth$\rightarrow$LoRA$\rightarrow$Width (D$\rightarrow$L$\rightarrow$W) vs. Depth$\rightarrow$Width$\rightarrow$LoRA (D$\rightarrow$W$\rightarrow$L). The configurations naming follows the same notation described in Section \ref{sec:generated_text}.} \label{tab:dlw_pipeline_comparison}
+{\scriptsize
+\begin{tabular}{l|l|ccc|ccc}
+\hline
+\multirow{2}{*}{\textbf{Config}} & \multirow{2}{*}{\parbox{1.2cm}{\centering\textbf{LoRA}\\\textbf{Type}}} & \multicolumn{3}{c|}{\textbf{D$\rightarrow$L$\rightarrow$W}} & \multicolumn{3}{c}{\textbf{D$\rightarrow$W$\rightarrow$L}} \\
+\cline{3-8}
+& & \multicolumn{2}{c}{\textbf{TriviaQA (\%) $\uparrow$}} & \textbf{WikiText} & \multicolumn{2}{c}{\textbf{TriviaQA (\%) $\uparrow$}} & \textbf{WikiText} \\
+\cline{3-4} \cline{6-7}
+& & \textbf{Closed} & \textbf{Open} & \textbf{PPL $\downarrow$} & \textbf{Closed} & \textbf{Open} & \textbf{PPL $\downarrow$} \\
+\hline
+D2 + W1:8 & WikiText & 26.3 & 58.8 & 21.93 & 26.5 & \textbf{63.8} & 21.76 \\
+D2 + W1:8 & TriviaQA & \textbf{28.2} & 59.3 & 52.51 & 27.4 & 60.4 & 51.89 \\
+D2 + W1:16 & WikiText & 27.6 & 59.4 & \textbf{21.42} & \textbf{28.1} & 61.8 & \textbf{21.42} \\
+D2 + W1:16 & TriviaQA & 27.2 & \textbf{59.6} & 51.29 & 28.0 & 59.5 & 50.99 \\
+D2 + W4:8 & WikiText & 8.3 & 29.9 & 49.33 & 11.8 & 44.0 & 34.10 \\
+D2 + W4:8 & TriviaQA & 9.8 & 29.3 & 139.97 & 14.7 & 45.0 & 116.95 \\
+D6 + W1:16 & WikiText & 11.4 & 23.6 & 37.97 & 11.5 & 25.6 & 37.82 \\
+D6 + W1:16 & TriviaQA & 15.6 & 26.1 & 347.78 & 16.8 & 27.5 & 310.53 \\
+D6 + W4:8 & WikiText & 5.3 & 12.4 & 85.89 & 0.9 & 9.6 & 55.46 \\
+D6 + W4:8 & TriviaQA & 5.9 & 5.1 & 513.98 & 8.9 & 16.2 & 568.93 \\
+D6 + W6:8 & WikiText & 0.1 & 0.3 & 3623.92 & 1.7 & 5.8 & 139.97 \\
+D6 + W6:8 & TriviaQA & 0.1 & 0.1 & 87116.36 & 2.2 & 0.7 & 3273.94 \\
+D8 + W1:8 & WikiText & 5.1 & 15.3 & 58.80 & 5.8 & 16.8 & 58.58 \\
+D8 + W1:8 & TriviaQA & 8.6 & 0.4 & 2610.21 & 8.7 & 1.3 & 132836.59 \\
 \hline
 \end{tabular}
-\end{center}
+}
+\end{table}
+
+The performance advantage of D$\rightarrow$W$\rightarrow$L becomes most pronounced in heavily pruned configurations: when width pruning is severe, LoRA's recovery capabilities are fundamentally limited by the reduced parameter space, making post-compression adaptation the more effective approach.
+
+Unsurprisingly, in less aggressively pruned variants, the performance difference between the two pipeline orderings is not as significant. When width pruning ratios are conservative (such as 1:16), the destructive impact is minimal, making the sequencing order less critical for overall performance preservation.
+
+What is particularly surprising, however, is that the D$\rightarrow$L$\rightarrow$W pipeline still maintains relatively good performance even when LoRA fine-tuning precedes aggressive width pruning. This resilience further proves the idea, which was also presented in Chapter \ref{chap:results}, that the primary source of redundancy in these compact models lies within individual layers rather than across the layers themselves. The fact that subsequent width pruning does not catastrophically destroy the LoRA-adapted representations suggests that the intra-layer parameter space contains sufficient redundancy to absorb significant compression while preserving the essential adaptations learned during fine-tuning.
+

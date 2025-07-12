@@ -36,14 +36,14 @@ Baseline Vanilla & 40.2 & 77.8 & & 20.05 & 1235.8M & 2.30 \\
 Depth 2 & 20.0 & 53.0 & & 55.24 & 1114.2M & 2.08 \\
 Depth 4 & 5.6 & 14.2 & & 230.77 & 992.5M & 1.85 \\
 Depth 6 & 2.0 & 2.4 & & 2081.04 & 870.9M & 1.62 \\
-Depth 8 & 1.2 & 1.4 & & 227734.90 & 749.2M & 1.40 \\
+Depth 8 & 1.2 & 1.4 & & 227734.90 & 749.2M & \textbf{1.40} \\
 Width 1:2 & 1.8 & 2.2 & & 471.66 & 749.3M & 2.30 \\
 Width 2:4 & 7.0 & 17.2 & & 161.10 & 749.3M & 2.30 \\
 Width 3:4 & 0.4 & 0.2 & & 10734.84 & 506.0M & 2.30 \\
 Width 1:8 & 47.8 & 80.8 & & 27.19 & 1114.2M & 2.30 \\
 Width 4:8 & 12.6 & 42.4 & & 81.32 & 749.3M & 2.30 \\
 Width 6:8 & 0.2 & 0.2 & & 3075.58 & 506.0M & 2.30 \\
-\textbf{Width 1:16} & \textbf{49.2} & \textbf{81.8} & & \textbf{26.77} & \textbf{1175.0M} & \textbf{2.30} \\
+Width 1:16 & \textbf{49.2} & \textbf{81.8} & & \textbf{26.77} & 1175.0M & 2.30 \\
 Width 8:16 & 16.2 & 52.8 & & 64.08 & 749.3M & 2.30 \\
 Width 12:16 & 0.2 & 0.2 & & 1793.97 & 506.0M & 2.30 \\
 Depth 2 + Width 1:2 & 0.4 & 0.4 & & 694.34 & 688.4M & 2.08 \\
@@ -71,11 +71,11 @@ Depth 6 + Width 1:8 & 2.0 & 1.6 & & 2376.63 & 794.9M & 1.62 \\
 Depth 6 + Width 4:8 & 0.8 & 1.0 & & 77482.90 & 566.8M & 1.62 \\
 Depth 6 + Width 6:8 & 0.2 & 0.2 & & 108418.06 & 414.8M & 1.62 \\
 Depth 6 + Width 1:16 & 1.8 & 1.6 & & 2032.84 & 832.9M & 1.62 \\
-Depth 8 + Width 1:2 & 0.4 & 0.2 & & 111859.62 & 506.0M & 1.40 \\
-Depth 8 + Width 2:4 & 0.6 & 0.4 & & 185871.81 & 506.0M & 1.40 \\
-Depth 8 + Width 3:4 & 0.4 & 0.4 & & 1044840.71 & 384.3M & 1.40 \\
-Depth 8 + Width 1:8 & 1.4 & 1.0 & & 224204.19 & 688.4M & 1.40 \\
-Depth 8 + Width 4:8 & 0.8 & 0.4 & & 554910.71 & 506.0M & 1.40 \\
+Depth 8 + Width 1:2 & 0.4 & 0.2 & & 111859.62 & 506.0M &  \textbf{1.40} \\
+Depth 8 + Width 2:4 & 0.6 & 0.4 & & 185871.81 & 506.0M &  \textbf{1.40} \\
+Depth 8 + Width 3:4 & 0.4 & 0.4 & & 1044840.71 & \textbf{384.3M} & \textbf{1.40} \\
+Depth 8 + Width 1:8 & 1.4 & 1.0 & & 224204.19 & 688.4M &  \textbf{1.40} \\
+Depth 8 + Width 4:8 & 0.8 & 0.4 & & 554910.71 & 506.0M &  \textbf{1.40} \\
 \end{longtable}
 }
 \normalsize
@@ -122,11 +122,11 @@ Depth 4 & WikiText & Yes & & 15.3 & 49.3 & 31.60 & 0.86 \\
 Depth 4 & TriviaQA & No & & 19.8 & 49.4 & 91.43 & 1.85 \\
 Depth 4 & TriviaQA & Yes & & 17.3 & 41.4 & 103.61 & 0.86 \\
 Depth 8 & WikiText & No & & 5.8 & 18.0 & 57.44 & 1.40 \\
-Depth 8 & WikiText & Yes & & 4.7 & 18.0 & 61.87 & 0.74 \\
-Depth 8 & WikiText & EoRA & & 5.0 & 17.5 & 59.50 & 0.74 \\
+Depth 8 & WikiText & Yes & & 4.7 & 18.0 & 61.87 & \textbf{0.74} \\
+Depth 8 & WikiText & EoRA & & 5.0 & 17.5 & 59.50 & \textbf{0.74} \\
 Depth 8 & TriviaQA & No & & 9.5 & 0.5 & 10005.97 & 1.40 \\
-Depth 8 & TriviaQA & Yes & & 7.8 & 0.7 & 16888.28 & 0.74 \\
-Depth 8 & TriviaQA & EoRA & & 9.5 & 0.4 & 7320.53 & 0.74 \\
+Depth 8 & TriviaQA & Yes & & 7.8 & 0.7 & 16888.28 & \textbf{0.74} \\
+Depth 8 & TriviaQA & EoRA & & 9.5 & 0.4 & 7320.53 & \textbf{0.74} \\
 Width 1:2 & WikiText & No & & 10.0 & 32.0 & 40.26 & 2.30 \\
 Width 1:2 & WikiText & Yes & & 9.1 & 27.3 & 42.19 & 0.98 \\
 Width 1:2 & WikiText & EoRA & & 8.8 & 28.3 & 41.78 & 0.98 \\
@@ -137,7 +137,7 @@ Width 2:4 & WikiText & No & & 12.6 & 45.3 & 30.63 & 2.30 \\
 Width 2:4 & WikiText & Yes & & 12.3 & 44.4 & 32.29 & 0.98 \\
 Width 2:4 & TriviaQA & No & & 15.8 & 48.6 & 90.72 & 2.30 \\
 Width 2:4 & TriviaQA & Yes & & 14.8 & 48.2 & 97.33 & 0.98 \\
-\textbf{Width 1:8} & \textbf{WikiText} & \textbf{No} & & \textbf{47.8} & \textbf{80.8} & \textbf{15.70} & \textbf{2.30} \\
+Width 1:8 & WikiText & No & & \textbf{47.8} & \textbf{80.8} & \textbf{15.70} & 2.30 \\
 Width 1:8 & WikiText & Yes & & 39.0 & 74.8 & 16.85 & 0.98 \\
 Width 1:8 & WikiText & EoRA & & 40.0 & 78.4 & 16.68 & 0.98 \\
 Width 1:8 & TriviaQA & No & & 44.9 & 79.4 & 30.81 & 2.30 \\
@@ -224,26 +224,26 @@ Depth 6 + Width 6:8 & WikiText & Yes & & 1.3 & 3.9 & 153.72 & 0.80 \\
 Depth 6 + Width 6:8 & TriviaQA & No & & 2.2 & 0.7 & 3273.94 & 1.62 \\
 Depth 6 + Width 6:8 & TriviaQA & Yes & & 2.2 & 0.7 & 3457.97 & 0.80 \\
 Depth 8 + Width 1:8 & WikiText & No & & 5.8 & 16.8 & 58.58 & 1.40 \\
-Depth 8 + Width 1:8 & WikiText & Yes & & 5.3 & 14.9 & 63.33 & 0.74 \\
+Depth 8 + Width 1:8 & WikiText & Yes & & 5.3 & 14.9 & 63.33 & \textbf{0.74} \\
 Depth 8 + Width 1:8 & TriviaQA & No & & 8.7 & 1.3 & 132836.59 & 1.40 \\
-Depth 8 + Width 1:8 & TriviaQA & Yes & & 3.8 & 0.3 & 126753.56 & 0.74 \\
+Depth 8 + Width 1:8 & TriviaQA & Yes & & 3.8 & 0.3 & 126753.56 & \textbf{0.74} \\
 Depth 8 + Width 3:4 & WikiText & No & & 0.2 & 1.3 & 278.36 & 1.40 \\
-Depth 8 + Width 3:4 & WikiText & Yes & & 0.5 & 1.3 & 289.45 & 0.74 \\
+Depth 8 + Width 3:4 & WikiText & Yes & & 0.5 & 1.3 & 289.45 & \textbf{0.74} \\
 Depth 8 + Width 3:4 & TriviaQA & No & & 0.3 & 0.3 & 7263.56 & 1.40 \\
-Depth 8 + Width 3:4 & TriviaQA & Yes & & 0.8 & 0.2 & 9326.59 & 0.74 \\
+Depth 8 + Width 3:4 & TriviaQA & Yes & & 0.8 & 0.2 & 9326.59 & \textbf{0.74} \\
 
 
 \end{longtable}
 \normalsize
 
-\subsection{Examples of Generated Text}
-In addition, a table with examples of text generated by some of these configurations is provided. Each model generated the text based on the prompt ``\texttt{Question: Who was the man behind The Chipmunks?\char`\\nAnswer:}".
+\subsection{Examples of Generated Text} \label{sec:generated_text}
+To illustrate the qualitative differences between configurations, Table \ref{tab:generated_answers} contains several examples of text generated by some of these configurations. Each model has generated the text based on the prompt ``\texttt{Question: Who was the man behind The Chipmunks?\char`\\nAnswer:}".
 
 The configurations are labeled using the initial letter of the name of the procedure (i.e. D[L] for depth pruning of L layers, W[N]:[M] for width pruning with N:M ratio, W and T for WikiText and TriviaQA LoRA fine-tuning respectively, Q for quantization and E for EoRA).
 
 {\scriptsize
 \begin{longtable}{@{}l p{\dimexpr\textwidth-3cm-4\tabcolsep}@{}}
-\caption[Text Generation Examples]{Sample answers generated by selected model configurations} \label{tab:generated_answers} \\
+\caption[Text Generation Examples]{Sample answers generated by selected model configurations.} \label{tab:generated_answers} \\
 \hline
 \textbf{Config} & \textbf{Generated Text} \\
 \hline
@@ -311,7 +311,7 @@ D6 + W6:8 + T & John O. (disambiguation) is the name of the 1990s film ‘The Gr
 D6 + W6:8 + T + Q & The Chip Chip, the Chip Chip, is the name for the first body of which body? \\
 D6 + W6:8 + W & The Chipmunks of the 2000s were the first of the 2000s in the 2000s. The 2000s were [..] \\
 D6 + W6:8 + W + Q & The Chipmunks of the 2000s were the first of the 2000s in the 2000s. The Chipimunks of the 2000s [..] \\
-D8 + W & The Chipmunks, the first child of the family, was the first child of the family [..] \\
+D8 + W & The Chipmunks, the first child of the family, was the first child of the [..] \\
 D8 + W + Q & The Chipmunks were the first to record the first recording of the song " The Chipmunks ". The song was recorded by th[..] \\
 D8 + W + Q + E & The Chipmunks were the first to be recorded in the 1970s. The Chipmunks were the first to be recorded in the 1970s. T[..] \\
 D8 + W1:8 + W & The Chipmunks were the first to be recorded in the 1980s by the BBC. The Chipmunks were the first to be recorded in t[..] \\
