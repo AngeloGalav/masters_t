@@ -1,6 +1,6 @@
 This appendix provides comprehensive experimental results across all tested configurations, including intermediate compression stages and generation examples that illustrate qualitative performance changes.
 
-\section{Pruning-Only Configurations}
+\section{Pruning-Only Configurations} \label{app:appendix1_pruning}
 
 This section examines models that have undergone only pruning operations (depth and width pruning) without additional optimization techniques.
 
@@ -80,7 +80,7 @@ Depth 8 + Width 4:8 & 0.8 & 0.4 & & 554910.71 & 506.0M &  \textbf{1.40} \\
 }
 \normalsize
 
-\section{Optimized Configurations}
+\section{Optimized Configurations} \label{app:appendix1_optimized}
 
 This section presents the quantitative results for the configurations that have undergone stages of the compression pipeline after pruning, including LoRA adaptation, quantization, and EoRA compensation, as well as those that have completed the full pipeline.
 

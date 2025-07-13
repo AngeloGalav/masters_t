@@ -89,7 +89,7 @@ The resulting pruned model maintains the same computational pattern as the origi
 
 \subsection{Width Pruning} \label{wanda}
 
-The width pruning approach in this pipeline exclusively employs structured pruning techniques to maintain compatibility with modern hardware accelerators. Specifically, the implementation targets structured sparsity patterns supported by NVIDIA's sparse Tensor Cores in Ampere and Hopper architectures \cite{nvidia-width}. This sparsity pattern enables theoretical 2$\times$ compute throughput compared to dense matrix multiplication while maintaining efficient memory access. In particular, unlike unstructured pruning that creates irregular sparse matrices, structured sparsity preserves regular patterns that can be compressed when loaded into VRAM, storing only non-zero values and compact index metadata while mapping directly to accelerator capabilities without additional software overhead. A visual representation of the advantage is shown in Figure \ref{fig:nvidia-width}.
+The width pruning approach in this pipeline exclusively employs structured pruning techniques to maintain compatibility with modern hardware accelerators. Specifically, the implementation targets structured sparsity patterns supported by NVIDIA's sparse Tensor Cores in Ampere and Hopper architectures \cite{nvidia-width}. This enables theoretical 2$\times$ compute throughput compared to dense matrix multiplication while maintaining efficient memory access. In particular, unlike unstructured pruning that creates irregular sparse matrices, structured sparsity preserves regular patterns that can be compressed when loaded into VRAM, storing only non-zero values and compact index metadata while mapping directly to accelerator capabilities without additional software overhead. A visual representation of the advantage is shown in Figure \ref{fig:nvidia-width}.
 
 \begin{figure}[htbp]
     \centering
@@ -216,8 +216,6 @@ Implementation utilizes the GPTQModel toolkit \cite{gptqmodel}, which integrates
 
 The evaluation system employs two distinct benchmarking datasets to assess model performance across different dimensions of language understanding. WikiText-2 \cite{wikitext} serves as the primary benchmark for measuring language modeling capability through perplexity computation \cite{perplexity}, while TriviaQA \cite{triviaqa} evaluates both reading comprehension and factual knowledge through question-answering tasks.
 
-The implementation leverages a custom evaluation framework which automatically detects model types and applies appropriate loading procedures.
-
 \subsection{WikiText-2 Perplexity Evaluation}
 
 WikiText-2 \cite{wikitext} represents a collection of high-quality Wikipedia articles that serves as a standard benchmark for language modeling tasks. The dataset consists of over 2 million tokens extracted from verified Wikipedia articles, providing a diverse corpus of well-structured text that spans multiple domains and writing styles.
@@ -231,7 +229,7 @@ Perplexity serves as the fundamental metric for language model evaluation, measu
 where $N$ represents the total number of tokens, $w_i$ denotes the $i$-th token, and $P(w_i | w_1, w_2, \ldots, w_{i-1})$ represents the model's predicted probability for the correct next token given the preceding context.
 Lower perplexity values indicate better language modeling performance, with the metric providing intuitive interpretation: a perplexity of $X$ means the model is, on average, as confused as if it had to choose uniformly among $X$ possibilities for each token.
 
-The evaluation protocol processes the whole WikiText-2 test split (trimmed to 512 sequence length) by accumulating negative log-likelihoods across all valid tokens before computing the final exponential transformation. The implementation iterates through sequences, computing cross-entropy loss for each token while applying attention masks to exclude padding tokens from the calculation, ensuring that only meaningful content contributes to the perplexity measurement.
+The evaluation system processes the whole WikiText-2 test split (trimmed to 512 sequence length) by accumulating negative log-likelihoods across all valid tokens before computing the final exponential transformation. The implementation iterates through sequences, computing cross-entropy loss for each token while applying attention masks to exclude padding tokens from the calculation, ensuring that only meaningful content contributes to the perplexity measurement.
 
 \subsection{TriviaQA Question-Answering Evaluation}
 
