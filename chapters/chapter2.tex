@@ -13,19 +13,20 @@ To address these limitations, Hochreiter and Schmidhuber introduced \textit{Long
     \item Finally, the \textit{output gate} regulates how much of the current cell state should be exposed to subsequent layers, effectively controlling what information propagates forward in the network.
 \end{itemize}
 
-All of these gates can be clearly observed in Figure \ref{fig:lstm-architecture}. This gating mechanism allows LSTMs to maintain gradient flow over much longer sequences compared to vanilla RNNs. Thus, they can capture dependencies spanning hundreds of time steps, making them particularly effective for tasks requiring long-term context understanding such as language modeling, machine translation, and text summarization.
+All of these gates can be clearly observed in Figure \ref{fig:lstm-architecture}. This gating mechanism allows LSTMs to maintain gradient flow over much longer sequences compared to vanilla RNNs. Thus, they can capture dependencies spanning hundreds of time steps, making them particularly effective for tasks requiring context understanding such as language modeling, machine translation, and text summarization.
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{image.png}
-\caption[LSTM Cell Architecture]{Architecture of an LSTM cell showing the three gating mechanisms. The input gate (left) controls information incorporation, the forget gate (center) manages memory retention, and the output gate (right) regulates information flow to subsequent layers. The cell state (horizontal line) maintains long-term memory throughout the sequence. The image was retrieved from \cite{hinton-lstm}.}
+\caption[LSTM Cell Architecture]{Architecture of an LSTM cell showing the three gating mechanisms. The input gate (left) controls information incorporation, the forget gate (lower center) manages memory retention, and the output gate (upper right) regulates information flow to subsequent layers. The cell state (horizontal line) maintains long-term memory throughout the sequence. The image was retrieved from \cite{hinton-lstm}.}
 \label{fig:lstm-architecture}
 \end{figure}
 
-While LSTMs significantly improved the ability to model sequential data, they still faced challenges in terms of parallelization, context understanding, and training efficiency especially when compared to newer architectures such as Transformers \cite{attention_is_all_you_need} (see Section \ref{transformer_architecture}).  Nevertheless, LSTMs are still widely used for various \textit{natural language processing} (NLP) tasks, including text generation \cite{lstm_textgeneration}.
+While LSTMs significantly improved the ability to model sequential data, they still faced challenges in terms of parallelization, long-term context understanding, and training efficiency especially when compared to newer architectures such as Transformers \cite{attention_is_all_you_need} (see Section \ref{transformer_architecture}).  Nevertheless, LSTMs are still widely used for various \textit{natural language processing} (NLP) tasks, including text generation \cite{lstm_textgeneration}.
 
 \subsection{Tokenization}
 
-Neural networks operate exclusively with numerical data, thus textual input needs to be converted into vector representations before processing. This is achieved through tokenization, which segments raw text into discrete units called tokens that are then mapped to high-dimensional vector embeddings.
+Neural networks operate exclusively with numerical data, thus textual input needs to be converted into vector representations before being processed. This is achieved through tokenization, which segments raw text into discrete units called tokens that are then mapped to high-dimensional vector embeddings.
 
 The tokenization process typically involves breaking text into subword units rather than complete words, which enables models to handle both common vocabulary and previously unseen terms through compositional understanding. Modern language models predominantly employ algorithms such as \textit{Byte Pair Encoding} (BPE) \cite{bpe}, which iteratively merges frequently occurring character pairs to create an optimal vocabulary. Each resulting token corresponds to a learned vector embedding that captures semantic and syntactic properties, enabling the neural network to process linguistic information through mathematical operations.
 
@@ -40,7 +41,7 @@ Attention allows a model to dynamically focus on different parts of the input se
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{images/attention.png}
-\caption[Visualization of Attention Patterns]{Attention patterns from two different heads in a layer a transformer model. The green visualization (right) shows distributed attention across multiple word pairs, while the red visualization (left) displays more focused, localized connections. Each line represents the attention weight between tokens, with darker lines indicating stronger attention, thus showing how individual attention heads specialize in capturing different linguistic relationships within the same sequence. The image was sourced from the appendix of \cite{attention_is_all_you_need}.}
+\caption[Visualization of Attention Patterns]{Attention patterns from two different heads in a layer of a Transformer. The green visualization (right) shows distributed attention across multiple word pairs, while the red visualization (left) displays more focused, localized connections. Each line represents the attention weight between tokens, with darker lines indicating stronger attention, thus showing how individual attention heads specialize in capturing different linguistic relationships within the same sequence. The image was sourced from the appendix of \cite{attention_is_all_you_need}.}
 \label{fig:attention}
 \end{figure}
 
@@ -77,28 +78,28 @@ The attention computation proceeds in four steps:
 
 \subsection{Multi-Head Attention}
 
-Rather than applying attention once to the full representation, the Transformer divides the input representation (i.e. $Q, K, V$) into $h$ blocks and applies the Scaled Dot Product Attention independently to each block. Each of these independent blocks is called an attention head, and they capture different types of relationships simultaneously (some heads might track syntax, others semantics, positions, etc.), as shown in Figure~\ref{fig:attention}. To achieve this, the input matrices $Q, K, V$ are projected $h$ times using different learned linear projections:
+Rather than applying attention once to the full representation, the Transformer divides the input representation (i.e. $Q, K, V$) into $h$ blocks and applies the Scaled Dot Product Attention independently to each of them. Each of these independent blocks is called an attention head, and they capture different types of relationships simultaneously (some heads might track syntax, others semantics, positions, etc.), as shown in Figure~\ref{fig:attention}. To achieve this, the input matrices $Q, K, V$ are projected $h$ times using different learned linear projections:
 \begin{equation}
-(QW_i^Q, KW_i^K, VW_i^V)
+(QW_Q^i, KW_K^i, VW_V^i)
 \end{equation}
 Given this, each head is computed as:
 \begin{equation}
-\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+\text{head}_i = \text{Attention}(QW_Q^i, KW_K^i, VW_V^i)
 \end{equation}
 
-Each head uses different projection matrices $W_i^Q \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $W_i^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$, and $W_i^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$, where typically $d_k = d_v = d_{\text{model}}/h$ for $h$ heads.
+Each head uses different projection matrices $W_Q^i \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $W_K^i \in \mathbb{R}^{d_{\text{model}} \times d_k}$, and $W_V^i \in \mathbb{R}^{d_{\text{model}} \times d_v}$, where typically $d_k = d_v = d_{\text{model}}/h$ for $h$ heads.
 
 As such, the final equation for multi-head attention is:
 \begin{equation}
 \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W_O
 \end{equation}
-where $W^O \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}}$ is the output projection matrix that transforms the concatenated multi-head output back to the original model dimension. This final projection is necessary because the concatenated heads have dimension $h \times d_v$, which must be projected back to $d_{\text{model}}$ to maintain dimensional consistency for subsequent layers.
+where $W_O \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}}$ is the output projection matrix that transforms the concatenated multi-head output back to the original model dimension. This final projection is necessary because the concatenated heads have dimension $h \times d_v$, and must be projected back to $d_{\text{model}}$ to maintain dimensional consistency for subsequent layers.
 
 Multi-head attention essentially gives the model multiple different perspective of the same input, and it is a vital system that contributes to make this architecture so powerful.
 
 \subsection{Positional Encodings}
 
-Since the attention mechanism computes similarity scores between every pair of tokens based solely on their content representations  (i.e. is permutation invariant), it treats the input as an unordered set rather than a sequence. This means that rearranging the input tokens would produce identical attention weights, making it impossible for the model to distinguish between different orderings of the same words. To address this limitation, the Transformer requires explicit positional information.
+Since the attention mechanism computes similarity scores between every pair of tokens based solely on their content representations  (i.e. it is permutation invariant), it treats the input as an unordered set rather than a sequence. This means that rearranging the input tokens would produce identical attention weights, making it impossible for the model to distinguish between different orderings of the same words. To address this limitation, the Transformer requires explicit positional information.
 
 The original work uses sinusoidal positional encodings:
 \begin{align}
@@ -121,20 +122,20 @@ This design enables the model to generate outputs that are grounded in the input
 
 \subsection{Decoder-Only Transformers}
 
-In decoder-only Transformers, there is no separate encoder module. The model predicts each token based only on the previously generated tokens, modeling the joint distribution \( p(x_1, x_2, \ldots, x_n) \) autoregressively. This means that the model outputs one token at a time, appends it to the input, and repeats until a stopping condition is met.
+In decoder-only Transformers, there is no separate encoder module: the model predicts each token based only on the previously generated tokens in an auto-regressive manner. This means that the model outputs one token at a time, appends it to the input, and repeats until a stopping condition is met.
 
-These architectures are simpler and more scalable, and they are the ones employed in large language models such as GPT \cite{gpt} and, of course, LLaMA \cite{llama}.
+These architectures are simpler and more scalable, and they are employed in large language models such as GPT \cite{gpt} and, of course, LLaMA \cite{llama}.
 
 Decoder-only Transformers are ideal for open-ended text generation and other tasks where the output is not conditioned on a separate input sequence.
-Figure \ref{fig:sidebyside} shows a comparison of encoder-decoder and decoder-only transformer architectures.
+Figure \ref{fig:sidebyside} shows a comparison of encoder-decoder and decoder-only Transformer architectures.
 
-\section{Introducing the LLaMA Family of Models} \label{llama_overview}
+\section{The LLaMA Family of Models} \label{llama_overview}
 
-The \textit{Large Language Model Meta AI} (LLaMA) family~\cite{llama}, developed by Meta AI, comprises a series of transformer-based autoregressive language models designed as competitors to OpenAI's GPT model family. The original LLaMA models were introduced in early 2023, followed by LLaMA 2 \cite{llama2} later that year and LLaMA 3 \cite{llama3} in 2024.
+The \textit{Large Language Model Meta AI} (LLaMA) family~\cite{llama}, developed by Meta AI, comprises a series of Transformer-based auto-regressive language models designed as competitors to OpenAI's GPT model family. The original LLaMA models were introduced in early 2023, followed by LLaMA 2 \cite{llama2} later that year and LLaMA 3 \cite{llama3} in 2024.
 
 The models vary in the number of parameters and capabilities, with the newer versions offering improved performance over the older ones. In particular, with LLaMA 3, Meta introduced models ranging from 8B to 405B parameters with major upgrades in both training scale and performance over LLaMA 2, while approaching results to OpenAI's GPT-4 \cite{gpt4} \cite{llama3}.
 
-The biggest strength of LLaMA, however, lies in its open-weight release strategy. Unlike most proprietary models, Meta provides access to the model weights under a research-friendly license, enabling the broader research community and industry practitioners to experiment with, fine-tune, and deploy large-scale language models without relying on closed systems. This openness has led to a proliferation of derivative models, and thus to the making of the project central to this thesis.
+The biggest strength of LLaMA, however, lies in its open-weight release strategy. Unlike most proprietary models, Meta provides access to the model weights under a research-friendly license, enabling the broader research community and industry practitioners to fine-tune, deploy and experiment with large-scale language models without relying on closed systems. This openness has led to a proliferation of derivative models, and thus to the project central to this thesis.
 
 
 \begin{figure}[htbp]
@@ -142,13 +143,13 @@ The biggest strength of LLaMA, however, lies in its open-weight release strategy
     \includegraphics[width=0.45\textwidth]{transformer.png}
     \hfill
     \includegraphics[width=0.45\textwidth]{transformer-gpt.png}
-    \caption[Comparison of Transformer Architectures]{On the left, a standard Transformer architecture, which consists of an encoder and a decoder. On the right, we can observe the same architecture, while highlighting the only the layers used by a GPT-style model, which is a decoder-only transformer. The main difference is that the decoder does not attend to the encoder's output, allowing for auto-regressive generation. The image is a modified version of the one found in Vaswani et al. research paper \cite{attention_is_all_you_need}.}
+    \caption[Comparison of Transformer Architectures]{On the left, a standard Transformer architecture, which consists of an encoder and a decoder. On the right, we can observe the same architecture, while highlighting only the layers used by a GPT-style model (i.e. a decoder-only Transformer). The main difference is that the decoder does not attend to the encoder's output, allowing for auto-regressive generation. The image is a modified version of the one found in Vaswani et al. research paper \cite{attention_is_all_you_need}.}
     \label{fig:sidebyside}
 \end{figure}
 
 \section{Representative Target Hardware} \label{target_hardware}
 
-The hardware constraints of an ideal target deployment scenario provide an additional compelling motivation for this compression work, beyond the environmental and social concerns outlined in Chapter \ref{chap:intro}. To illustrate the severity of these constraints, Siracusa \cite{target_hardware} serves as a representative example of the type of deployment platform this compression pipeline targets. This heterogeneous RISC-V \textit{System-on-Chip} (SoC) fabricated in 16 nm CMOS technology exemplifies the stringent resource limitations typical of edge devices designed for \textit{Extended Reality} (XR) applications and similar embedded AI scenarios. While this project does not involve actual deployment or testing on this specific hardware, the severe memory limitations and computational constraints characteristic of such platforms make LLM compression not merely an environmental imperative, but a fundamental requirement for any practical edge deployment. A visual representation of Siracusa's architecture can be found in Figure \ref{fig:siracusa}.
+The hardware constraints of an ideal target deployment scenario provide an additional compelling motivation for this compression work, beyond the environmental and social concerns outlined in Chapter \ref{chap:intro}. To illustrate the severity of these constraints, Siracusa \cite{target_hardware} serves as a representative example of the type of deployment platform this compression pipeline aims to support. This heterogeneous RISC-V \textit{System-on-Chip} (SoC) fabricated in 16 nm CMOS technology exemplifies the stringent resource limitations typical of edge devices designed for \textit{Extended Reality} (XR) applications and similar embedded AI scenarios. While this project does not involve actual deployment or testing on this specific hardware, the severe memory limitations and computational constraints characteristic of such platforms make LLM compression not merely an environmental imperative, but a fundamental requirement for any practical edge deployment. A visual representation of Siracusa's architecture can be found in Figure \ref{fig:siracusa}.
 
 Siracusa's memory hierarchy presents the primary constraint for the optimization efforts. The system features a three-tier memory organization: 256 KiB of L1 \textit{Tightly-Coupled Data Memory} (TCDM) SRAM organized into 16 word-interleaved banks, 4 MiB of SRAM tile memory, and 4 MiB of \textit{magnetoresistive memory} (MRAM) for weight storage, totaling 8.5 MiB. The memory hierarchy uses specialized allocation: MRAM stores weights while tile memory handles activations. However, it may be obvious to the reader that this amount of storage is rather limiting: exceeding the 4 MiB weight memory capacity forces reliance on slower off-chip transfers that can increase inference latency by orders of magnitude and considerably raise energy consumption for memory access.
 
@@ -177,25 +178,25 @@ A significant challenge in conventional distillation arises from the substantial
 
 \textit{Homotopic Distillation} (HomoDistil) \cite{homodistil} addresses this challenge through an innovative approach that combines iterative pruning with distillation. Rather than initializing a small student model from scratch, HomoDistil begins with the full teacher model and gradually prunes neurons while simultaneously distilling knowledge. This maintains a small prediction discrepancy throughout training, ensuring effective knowledge transfer even at high compression ratios.
 
-The key insight of HomoDistil is that starting from the teacher model and iteratively removing the least important components prevents the dramatic performance drops typically seen with aggressive compression. At each training iteration, the method computes importance scores for individual neurons and removes those with minimal impact on the loss function. This pruning strategy is very similar to one adopted in this document for removing whole layers (i.e. depth pruning), as shown in Section \ref{depth_pruning}. This gradual reduction maintains network connectivity and allows the distillation loss to effectively guide the compression process.
+The key insight of HomoDistil is that starting from the teacher model and iteratively removing the least important components prevents the dramatic performance drops typically seen with aggressive compression. At each training iteration, the method computes importance scores for individual neurons and removes those with minimal impact on the loss function. This pruning strategy is very similar to one adopted in this document for removing whole layers (i.e. depth pruning), as shown in Section \ref{depth_pruning}. The gradual reduction maintains network connectivity and allows the distillation loss to effectively guide the compression process.
 
-\subsection{Pruning Approaches}
+\subsection{Pruning Approaches} \label{pruning_paragraph_chap2}
 
-Pruning is an optimization technique that reduces model complexity by systematically removing network components. The approach operates through two primary strategies: width pruning, which removes individual neurons or layers within transformer blocks, and depth pruning, which eliminates entire submodules. Given its central importance to this work, pruning techniques are examined in detail in Section \ref{pruning}.
+Pruning is an optimization technique that reduces model complexity by systematically removing network components. The approach operates through two primary strategies: width pruning, which removes individual neurons or layers within Transformer blocks, and depth pruning, which eliminates entire submodules. Given their central importance to this work, these techniques are examined in detail in Section \ref{pruning}.
 
 Nevertheless, it is worth reviewing relevant work in this area to position our contribution within the broader research landscape. \textit{Two-Stage Structured Pruning} (2SSP) \cite{2ssp} combines width and depth pruning optimally using a two stage approach. This method applies width pruning to feed-forward networks in the first stage, followed by depth pruning of attention modules in the second stage.
 
-For width-pruning, importance scores are computed based on the magnitude of neuron activations across calibration samples, which are then used to remove entire neurons. On the other hand, the second stage targets attention modules which are iteratively removed based on their impact on model perplexity. This coarser-grained approach proves effective because attention modules often exhibit high redundancy.
+For width pruning, importance scores are computed based on the magnitude of neuron activations across calibration samples, which are then used to remove entire neurons. On the other hand, the second stage targets attention modules which are iteratively removed based on their impact on model perplexity. According to the paper \cite{2ssp}, this coarser-grained approach proves effective because attention modules often exhibit high redundancy.
 
 A critical innovation in 2SSP is the automatic balancing of sparsity between the two stages. The method uses an adaptive formula that considers the relative sizes of feed-forward and attention components to determine optimal allocation of parameter reduction across stages. This ensures that neither component becomes a bottleneck while maintaining overall performance.
 
 While some similarities can be found, the work of this thesis differs from the pruning approach adopted in 2SSP in two fundamental ways.
 \begin{itemize}
-\item The width-pruning targets differ significantly: while 2SSP focuses on FFN components, the approach presented in this thesis targets all attention weight matrices. Additionally, the structured width-pruning strategies are entirely distinct: 2SSP removes complete rows and columns by slicing weight matrices rather than using ratio-based structural pruning (see Section \ref{wanda}).
-\item The method for computing layer importance during depth-pruning employs a compound metric rather than relying solely on perplexity-based measures (see Section \ref{depth_pruning}).
+\item While 2SSP focuses on feed-forward network components, the approach presented in this thesis also targets the attention weight matrices.
+\item 2SSP removes complete rows and columns by slicing weight matrices rather than using ratio-based structural pruning (see Section \ref{wanda}).
 \end{itemize}
 
-Another promising approach to structured pruning is demonstrated by \textit{Sheared LLaMA} \cite{sheared_llama}, which takes a fundamentally different perspective by viewing pruning as an initialization step rather than a final compression technique. This method employs targeted structured pruning to compress LLaMA2-7B down to 1.3B and 2.7B parameter models, followed by substantial continued pre-training to recover performance.
+Another promising approach to structured weight removal is demonstrated by \textit{Sheared LLaMA} \cite{sheared_llama}, which takes a fundamentally different perspective by viewing pruning as an initialization step rather than a final compression technique. This method employs targeted structured pruning to compress LLaMA2-7B down to 1.3B and 2.7B parameter models, followed by substantial continued pre-training to recover performance.
 
 In particular, Sheared LLaMA combines two techniques: first, a constrained optimization approach that prunes models to precisely match target architectures (derived from existing well-optimized models), and second, dynamic batch loading that adjusts training data composition based on domain-specific loss recovery rates. This addresses a critical observation that pruned models retain different levels of knowledge across domains (e.g. maintaining better performance on code repositories while losing more capability on natural language text).
 

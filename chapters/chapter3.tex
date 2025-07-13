@@ -1,21 +1,21 @@
 % Chapter 3: Methodology
 
-Having covered the importance of LLM optimization and the technical architecture of transformers in previous chapters, we now turn to the practical challenge of model compression.
+Having covered the importance of LLM optimization and the technical architecture of Transformers in previous chapters, we now turn to the practical challenge of model compression.
 
-The following sections begin with preliminary experiments on layer manipulation that revealed crucial insights about architectural redundancy in transformer models and shaped the main compression strategy. It then presents what is possibly the heart of this research: a multi-stage pipeline that combines several optimization techniques in a structured sequence. Each stage is examined with both theoretical foundations and key implementation considerations. Finally, the evaluation framework is outlined along with the chosen metrics and benchmarks.
+The following sections begin with details on the preliminary experiments that revealed crucial insights about architectural redundancy in Transformer models and shaped the main compression strategy. It then presents what is possibly the heart of this research: a multi-stage pipeline that combines several optimization techniques in a structured sequence. Each stage is examined with both theoretical foundations and key implementation considerations. Finally, the evaluation framework is outlined along with the chosen metrics and benchmarks.
 
 \section{Preliminary Research: Franken-LLaMA} \label{frankenllama}
 
-Before embarking on systematic compression techniques for our target 1B parameter LLaMA model, preliminary research was conducted to understand the behavior of transformer architectures under structural changes. This exploratory phase consisted on the ``Franken-LLaMA'' project \cite{franken-llama}, which involved experimenting with architectural modifications on the larger LLaMA2-7B-Chat model \cite{llama2} to gain a first insight into which components of the transformer architecture are most critical for maintaining model performance.
+Before embarking on systematic compression techniques for our target 1B parameter LLaMA model, preliminary research was conducted to understand the behavior of Transformer architectures under structural changes. This exploratory phase consisted on the ``Franken-LLaMA'' project \cite{franken-llama}, which involved experimenting with architectural modifications on the larger LLaMA2-7B-Chat model \cite{llama2} to gain a first insight into which components of the Transformer architecture are most critical for maintaining model performance.
 
-The approach centered on modifying the standard transformer execution flow by selectively including, excluding, or repeating attention blocks within the 32-layer architecture. Implementation was carried out using PyTorch \cite{pytorch}, with modifications to Hugging Face's transformers library \cite{hf_transformers} to enable dynamic layer skipping and repetition at runtime. The repetition strategy was particularly attractive as it could theoretically reduce memory footprint by reusing the same layer weights multiple times rather than storing distinct parameters for each position. This weight sharing approach aligned directly with the target hardware constraints outlined in Section \ref{target_hardware}.
+The approach centered on modifying the standard Transformer execution flow by selectively including, excluding, or repeating attention blocks within the 32-layer architecture. Implementation was carried out using PyTorch \cite{pytorch}, with modifications to Hugging Face's transformers library \cite{hf_transformers} to enable dynamic layer skipping and repetition at runtime. The repetition strategy was particularly attractive as it could theoretically reduce memory footprint by reusing the same layer weights multiple times rather than storing distinct parameters for each position, and aligned directly with the target hardware constraints outlined in Section \ref{target_hardware}.
 
 25 different layer configurations were tested, each of which was evaluated through qualitative text generation tasks and quantitative assessment on the HellaSwag dataset \cite{hellaswag}.
-The results revealed that conservative modifications often maintained reasonable performance while reducing computational overhead. In particular, skipping layers towards the middle-end of the model rather than the beginning or final layers resulted in lower output quality degradation. For instance, the configuration that skipped layers 23-27 achieved a HellaSwag score of 0.38 compared to the baseline's 0.34 (the baseline consisted on the unmodified LLaMA 2 model), suggesting that certain middle layers may contribute less to final performance than expected.
+The results revealed that conservative modifications often maintained reasonable performance while reducing computational overhead. In particular, skipping layers towards the middle-end of the model rather than the beginning or final layers resulted in lower output quality degradation. For instance, the configuration that skipped layers 23 to 27 achieved a HellaSwag score of 0.38 compared to the baseline's 0.34 (the baseline consisted on the unmodified LLaMA 2 model), suggesting that certain middle layers may contribute less to final performance than expected.
 
-However, more aggressive modifications typically led to a much more severe degradation in output quality. Configurations involving extensive layer repetition or using only sparse layer selections often produced incoherent text with non-ASCII characters and semantic breakdown. This behavior indicated that while some redundancy exists in the transformer architecture, there are clear limits to how extensively the model can be modified before fundamental language capabilities deteriorate.
+However, more aggressive modifications typically led to a much more severe degradation in output quality. Configurations involving extensive layer repetition or using only sparse layer selections often produced incoherent text with non-ASCII characters and semantic breakdown. This behavior indicated that while some redundancy exists in the Transformer architecture, there are clear limits to how extensively the model can be modified before fundamental language capabilities deteriorate.
 
-These preliminary findings informed the subsequent approach to systematic compression, as they revealed that strategic layer removal could maintain acceptable quality levels while reducing computational overhead, suggesting that pruning techniques might offer promising avenues for optimization. At the same time, Franken-LLaMA proved that layer repetition was not a viable strategy and caused heavy performance degradation.
+Results from this exploratory phase informed the subsequent approach to systematic compression, as they revealed that strategic layer removal could maintain acceptable quality levels while reducing computational overhead, suggesting that pruning techniques might offer promising avenues for optimization. At the same time, Franken-LLaMA proved that layer repetition was not a viable strategy and caused heavy performance degradation.
 
 \section{An Overview of the Pipeline}
 
@@ -25,21 +25,21 @@ The choice of this particular model as the starting point is both strategic and 
 
 Following the approach established in the preliminary experiments (Section \ref{frankenllama}), the pipeline is implemented using PyTorch \cite{pytorch} for model modifications and Hugging Face's transformers library \cite{hf_transformers} for model loading and inference. The majority of configurations were developed using the Instruct version of LLaMA 3.2 1B \cite{llama3_1b_instruct}, as these instruction-tuned models are specifically optimized for dialogue and question-answering tasks that constitute the primary evaluation benchmarks in this work (see Section \ref{evaluation}), thereby minimizing the need for additional prompt engineering during testing phases. Nevertheless, the compatibility with the original model is kept, and the framework can produce configurations built upon the vanilla LLaMA 3.2 1B variant \cite{llama3_1b} by specifying a flag before execution.
 
-The compression pipeline follows a five-stage progression, with each stage building upon the previous one. The particular ordering was chosen based on the complementary nature of these techniques and their relative impact on model structure.
+The compression pipeline follows a five-stage progression, with each stage building upon the previous one. This particular ordering was chosen based on the complementary nature of these techniques and their relative impact on model structure.
 
 \begin{enumerate}
-    \item The first stage implements depth-wise pruning (Section \ref{depth_pruning}), where entire transformer layers are removed based on importance metrics computed during a calibration phase. This coarse-grained approach eliminates redundant blocks, and ultimately redefines the skeleton of the architecture.
+    \item The first stage implements \textbf{depth-wise pruning} (Section \ref{depth_pruning}), where entire Transformer layers are removed based on importance metrics computed during a calibration phase. This coarse-grained approach eliminates redundant blocks, and ultimately redefines the skeleton of the architecture.
 
-    \item Width-wise pruning follows as the second stage (Section \ref{wanda}), applying the WANDA algorithm \cite{wanda} to remove less critical weights within the remaining layers. This is a finer-grained approach compared to the depth-pruning, as it operates at the parameter level.
+    \item \textbf{Width-wise pruning} follows as the second stage (Section \ref{wanda}), applying the WANDA algorithm \cite{wanda} to remove less critical weights within the remaining layers. This is a finer-grained approach compared to depth pruning, as it operates at the parameter level.
 
-    \item The third stage introduces \textit{Low-Rank Adaptation} (LoRA) \cite{lora} (Section \ref{lora}) to recover performance lost during the pruning phases, while also allowing for fine-tuning on specific downstream tasks.
+    \item The third stage introduces \textbf{\textit{Low-Rank Adaptation}} (LoRA) \cite{lora} (Section \ref{lora}) to recover performance lost during the pruning phases, while also allowing for fine-tuning on specific downstream tasks.
 
-    \item The fourth stage applies 4-bit quantization using GPTQ \cite{gptq_quantization} (Section \ref{quantization}), reducing the memory footprint of individual parameters.
+    \item The fourth stage applies 4-bit  \textbf{quantization} using GPTQ \cite{gptq_quantization} (Section \ref{quantization}), reducing the memory footprint of individual parameters.
 
-    \item The final stage includes an optional \textit{Eigenspace Low-Rank Approximation} (EoRA) \cite{eora} (Section \ref{eora}) step to improve the performance of the quantized model.
+    \item The final stage produces and applies an \textbf{\textit{Eigenspace Low-Rank Approximation}} (EoRA) \cite{eora} adapter (Section \ref{eora}) step to improve the performance of the quantized model.
 \end{enumerate}
 
-Detailed descriptions of each stage are provided in the following sections. Each step yields an intermediate model suitable for independent evaluation, except when explicitly stated otherwise. Additionally, the pipeline features a comprehensive set of tuning options, such as the ability to skip specific stages or experiment with different parameter configurations without modifying the core implementation. This allows to conduct ablation studies more easily and adapt the framework to specific hardware constraints.
+Detailed descriptions of each stage are provided in the following sections. Each step yields an intermediate model suitable for independent evaluation, except when the user specifies otherwise. Additionally, the pipeline features a comprehensive set of tuning options, such as the ability to skip specific stages or experiment with different parameter configurations without modifying the core implementation. This allows to conduct ablation studies more easily and adapt the framework to specific hardware constraints.
 
 \section{Pruning Techniques} \label{pruning}
 
@@ -49,25 +49,23 @@ Pruning reduces neural network complexity by removing components according to im
     \item \textbf{Unstructured pruning} eliminates individual weights throughout the network randomly or based on an importance criteria such as magnitude.
     \item \textbf{Structured pruning} removes entire architectural units such as groups of neurons, attention heads, or complete layers.
 \end{itemize}
-
 Additionally, they can be further categorized based on the spatial dimension of the operation. In particular:
 \begin{itemize}
     \item \textbf{Width pruning} targets components within layers, such as individual neurons inside an attention block.
-    \item \textbf{Depth pruning} eliminates entire layers or transformer blocks from the architecture. It is generally regarded as a form of structured pruning.
+    \item \textbf{Depth pruning} eliminates entire layers or Transformer blocks from the architecture. It is generally regarded as a form of structured pruning.
 \end{itemize}
-
 A visual comparison between these two pruning techniques is shown in Figure \ref{fig:pruning_comparison}.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.7\textwidth]{pruning.png}
-    \caption[Comparison of Depth and Width Pruning]{In depth pruning, we remove the single transformer layers (left). On the other hand, in width pruning we remove single neurons from the weight matrices (right). The image was retrieved from \cite{shortened_llama}.}
+    \caption[Comparison of Depth and Width Pruning]{Depth pruning removes the single Transformer layers (left), while width pruning removes single neurons from the weight matrices (right). The image was retrieved from \cite{shortened_llama}.}
     \label{fig:pruning_comparison}
 \end{figure}
 
 \subsection{Depth Pruning} \label{depth_pruning}
 
-Regarding depth pruning, the approach used in this project eliminates entire attention blocks following the methodology established by Kim et al. in their Shortened LLaMA work \cite{shortened_llama}, in which they define three metrics to determine the importance of a transformer block:
+Regarding depth pruning, the approach used in this project eliminates entire attention blocks following the methodology established by Kim et al. in their Shortened LLaMA work \cite{shortened_llama}, in which they define three metrics to determine the importance of a Transformer block:
 
 \begin{itemize}
    \item \textbf{Magnitude-based importance}: computes L1 norms of weights within each block, assuming that layers with larger weight magnitudes contribute more significantly to model output.
@@ -78,7 +76,7 @@ Regarding depth pruning, the approach used in this project eliminates entire att
    \end{equation}
    where the gradient-weight product indicates layer significance based on how loss would change if the layer were removed.
    
-   \item \textbf{Perplexity-based importance}: temporarily removes each layer and measures performance degradation on calibration data through perplexity \cite{perplexity}, providing a direct empirical assessment of layer contribution to model quality (details on this metric will be further explained in Section \ref{evaluation}).
+   \item \textbf{Perplexity-based importance}: temporarily removes each layer and measures performance degradation on calibration data through perplexity \cite{perplexity}, providing a direct empirical assessment of layer contribution to model quality (details on this metric are further explained in Section \ref{evaluation}).
 \end{itemize}
 
 While the pipeline implementation incorporates all three importance ranking methods, in practice, perplexity served as the main importance metric during testing due to its direct correlation with model performance degradation. In view of this, all layers are ranked according to their computed importance scores, with layers receiving lower rankings considered less critical and prioritized for removal during the pruning process.
@@ -91,7 +89,7 @@ The resulting pruned model maintains the same computational pattern as the origi
 
 \subsection{Width Pruning} \label{wanda}
 
-The width pruning approach in this pipeline exclusively employs structured pruning techniques to maintain compatibility with modern hardware accelerators. Specifically, the implementation targets structured sparsity patterns supported by NVIDIA's sparse Tensor Cores in Ampere and Hopper architectures \cite{nvidia-width}. This sparsity pattern enables theoretical 2x compute throughput compared to dense matrix multiplication while maintaining efficient memory access. In particular, unlike unstructured pruning that creates irregular sparse matrices requiring specialized computation libraries, structured sparsity preserves regular tensor shapes that map directly to accelerator capabilities without additional software overhead. A visual representation of the advantage is shown in Figure \ref{fig:nvidia-width}.
+The width pruning approach in this pipeline exclusively employs structured pruning techniques to maintain compatibility with modern hardware accelerators. Specifically, the implementation targets structured sparsity patterns supported by NVIDIA's sparse Tensor Cores in Ampere and Hopper architectures \cite{nvidia-width}. This sparsity pattern enables theoretical 2$\times$ compute throughput compared to dense matrix multiplication while maintaining efficient memory access. In particular, unlike unstructured pruning that creates irregular sparse matrices, structured sparsity preserves regular patterns that can be compressed when loaded into VRAM, storing only non-zero values and compact index metadata while mapping directly to accelerator capabilities without additional software overhead. A visual representation of the advantage is shown in Figure \ref{fig:nvidia-width}.
 
 \begin{figure}[htbp]
     \centering
@@ -100,7 +98,7 @@ The width pruning approach in this pipeline exclusively employs structured pruni
     \label{fig:nvidia-width}
 \end{figure}
 
-\textit{Weight And activation-based pruning} (WANDA) \cite{wanda} serves as the core algorithm for implementing this structured approach. Originally developed for unstructured weight removal, WANDA's official implementation includes extensions for structured pruning patterns that align with the hardware requirements. The method leverages the observation that large language models develop outlier activations, which are emergent features with magnitudes significantly larger than typical hidden state values and are crucial for performance. Consequently, the WANDA importance metric for each weight $W_{ij}$ is defined as
+\textit{Weight AND Activation-based pruning} (WANDA) \cite{wanda} serves as the core algorithm for implementing this structured approach. Originally developed for unstructured weight removal, WANDA's official implementation includes extensions for structured pruning patterns that align with the hardware requirements. The method leverages the observation that large language models develop outlier activations, which are emergent features with magnitudes significantly larger than typical hidden state values and are crucial for performance. Consequently, the WANDA importance metric for each weight $W_{ij}$ is defined as
 
 \begin{equation}
 S_{ij} = |W_{ij}| \cdot \|X_j\|_2
@@ -108,7 +106,7 @@ S_{ij} = |W_{ij}| \cdot \|X_j\|_2
 
 where $|W_{ij}|$ represents the absolute weight magnitude and $\|X_j\|_2$ evaluates the L2 norm of the $j$-th input feature across calibration samples. This formulation addresses a key limitation of traditional magnitude-based importance, which is typically used by width pruning approaches, by accounting for input activations, which play an equally important role in determining neuron outputs.
 
-The structured pruning process each layer by organizing weights into groups of $M$ consecutive elements (i.e. consecutive columns of the same row of the weight matrix) and removing the $N$ with lowest importance scores while retaining the rest. This is applied comprehensively to all linear layers in the transformer architecture, including both the feedforward networks and the attention-related projection matrices $W_Q$, $W_K$, $W_V$, and $W_O$ (see Section \ref{attention}). The activation statistics are collected by forward hooks during calibration, with each linear layer wrapped to compute the L2 norm of input activations across samples. After computing importance scores for each weight group, the implementation uses PyTorch's scatter operations to efficiently mark low-importance weights for removal. The algorithm completes pruning in a single forward pass using the C4 corpus \cite{c4} as calibration dataset.
+The structured pruning process each layer by organizing weights into groups of $M$ consecutive elements (i.e. consecutive columns of the same row of the weight matrix) and removing the $N$ weights with lowest importance scores while retaining the rest. This is applied comprehensively to all linear layers in the Transformer architecture, including both the feed-forward networks and the attention-related projection matrices $W_Q$, $W_K$, $W_V$, and $W_O$ (see Section \ref{attention}). The activation statistics are collected by forward hooks during calibration, with each linear layer wrapped to compute the L2 norm of input activations across samples. After computing importance scores for each weight group, the implementation uses PyTorch's scatter operations to efficiently mark low-importance weights for removal. The algorithm completes pruning in a single forward pass using the C4 corpus \cite{c4} as calibration dataset.
 
 \section{Low-Rank Adaptation (LoRA)} \label{lora}
 
@@ -129,7 +127,7 @@ W_0 + \Delta W = W_0 + BA
 
 where $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times k}$, and the rank $r \ll \min(d,k)$. During training, $W_0$ remains frozen while only $A$ and $B$ contain trainable parameters.
 
-The modified forward pass becomes:
+Consequently, the modified forward pass becomes:
 \begin{equation}
 h = W_0X + \Delta WX = W_0X + BAX
 \end{equation}
@@ -140,7 +138,7 @@ LoRA offers substantial reductions in trainable parameters while maintaining com
 
 Within the compression pipeline, LoRA serves as the third stage, following the pruning phases. This positioning is strategic: LoRA helps recover performance degraded by the aggressive structural modifications while simultaneously adapting the model for specific downstream tasks.
 
-The implementation utilizes Hugging Face's \textit{Parameter-Efficient Fine-Tuning} (PEFT) library \cite{peft}, which provides optimized LoRA integration with Hugging Face transformer models. The configuration specifically targets the four attention projection matrices: query ($W_Q$), key ($W_K$), value ($W_V$), and output ($W_O$) projections (see Section~\ref{attention}) with a rank of 8 and dropout rate of 0.1. Training employs mixed-precision optimization with gradient accumulation to maintain computational efficiency while adapting to the reduced parameter space.
+The implementation utilizes Hugging Face's \textit{Parameter-Efficient Fine-Tuning} (PEFT) library \cite{peft}, which provides optimized LoRA integration with Hugging Face's transformer models. The configuration specifically targets the four attention projection matrices: query ($W_Q$), key ($W_K$), value ($W_V$), and output ($W_O$) projections (see Section~\ref{attention}) with a rank of 8 and dropout rate of 0.1. Training employs mixed-precision optimization with gradient accumulation to maintain computational efficiency while adapting to the reduced parameter space.
 
 \section{Quantization} \label{quantization}
 
@@ -168,7 +166,7 @@ The second step consists on the implementation of lazy batch updates. To address
 \begin{equation}
 H_{-Q}^{-1} = \left[H^{-1} - H_{:,Q}^{-1}([H^{-1}]_{QQ})^{-1}H_{Q,:}^{-1}\right]_{-Q}
 \end{equation}
-where $Q$ denotes the set of quantized weight indices within the current block, $F$ represents remaining full-precision weights, $\delta_F$ is the compensation update applied to unquantized weights to minimize reconstruction error, and $H_{-Q}^{-1}$ is the updated inverse Hessian matrix with rows and columns corresponding to quantized weights $Q$ removed.
+where $Q$ denotes the set of quantized weight indices within the current block, $F$ represents remaining full-precision weights, $w_q$ denotes a weight $\in Q$, $\delta_F$ is the compensation update applied to unquantized weights to minimize reconstruction error, and $H_{-Q}^{-1}$ is the updated inverse Hessian matrix with rows and columns corresponding to quantized weights $Q$ removed.
 
 The final step is the Cholesky reformulation. For numerical stability at scale, GPTQ precomputes Hessian inverse information using Cholesky decomposition rather than iterative matrix updates. The Hessian matrix is computed as:
 \begin{equation}
@@ -182,7 +180,7 @@ The compression pipeline places quantization as the fourth stage, applied after 
 
 \subsection{Eigenspace Low-Rank Approximation (EoRA)} \label{eora}
 
-Following quantization, Eigenspace Low-Rank Approximation (EoRA) \cite{eora} can be optionally applied to recover accuracy lost during compression. EoRA is a rather novel technique which provides a training-free method to enhance performance of compressed models through low-rank matrix compensation by projecting compression errors into task-specific eigenspaces. Figure \ref{fig:eora} summarises the process in a schematic way.
+Following quantization, \textit{Eigenspace Low-Rank Approximation} (EoRA) \cite{eora} can be optionally applied to recover accuracy lost during compression. EoRA is a rather novel technique which provides a training-free method to enhance performance of compressed models through low-rank matrix compensation by projecting compression errors into task-specific eigenspaces. Figure \ref{fig:eora} summarises the process in a schematic way.
 
 
 \begin{figure}[htbp]
@@ -193,7 +191,7 @@ Following quantization, Eigenspace Low-Rank Approximation (EoRA) \cite{eora} can
 \end{figure}
 
 
-Despite their similar names, EoRA differs fundamentally from Low-Rank Adaptation (LoRA). While LoRA adapts pre-trained models to new tasks through gradient-based optimization of low-rank matrices, EoRA focuses on compensating compression-induced errors without training. Nevertheless, both methods employ additive low-rank corrections to weight matrices which are formulated as adapters.
+Despite their similar names, EoRA differs fundamentally from Low-Rank Adaptation. While LoRA adapts pre-trained models to new tasks through gradient-based optimization of low-rank matrices, EoRA focuses on compensating compression-induced errors without training. Nevertheless, both methods employ additive low-rank corrections to weight matrices which are formulated as adapters.
 
 As noted earlier, EoRA projects compression error into the eigenspace of layer-wise input activations before applying singular value decomposition. For a layer with original weights $W$ and compressed weights $\hat{W}$, compression error is $\Delta W = W - \hat{W}$. Rather than directly decomposing this error, EoRA first computes the eigendecomposition $\tilde{X}\tilde{X}^T = Q\Lambda Q^T$, where $\tilde{X}$ represents average input activations over the calibration dataset. This is done in order to derive the eigenspace projection matrix $Q$, whose columns are the eigenvectors, and $\Lambda$, which is a diagonal matrix containing the corresponding eigenvalues.
 
@@ -208,7 +206,7 @@ Finally, the projected error $\Delta W'$ is decomposed using SVD to obtain $\Del
 
 Similarly to LoRA, the forward pass on the compensated model becomes:
 \begin{equation}
-h = \hat{W}X + B'A'(Q')^{-1}X = \hat{W}X + B'AX
+h = \hat{W}X + \Delta W'(Q')^{-1}X = \hat{W}X + B'A'(Q')^{-1}X = \hat{W}X + B'AX
 \end{equation}
 
 Implementation utilizes the GPTQModel toolkit \cite{gptqmodel}, which integrates EoRA compensation with existing quantized models. In the default configuration of the pipeline, the EoRA calibration step uses 64 samples from the C4 dataset \cite{c4}. This minimal calibration requirement represents one of the key advantages of this approach. Additionally, the adapter is generated using a rank of 32. Although the original paper employed a rank of 128 \cite{eora}, the GPTQModel documentation indicates that larger ranks can cause overfitting while obviously consuming more memory \cite{gptqmodel}. This issue may be particularly pronounced for smaller 1B models such as the one adopted in this work.
@@ -216,7 +214,7 @@ Implementation utilizes the GPTQModel toolkit \cite{gptqmodel}, which integrates
 
 \section{Evaluation} \label{evaluation}
 
-The evaluation framework employs two distinct benchmarking datasets to assess model performance across different dimensions of language understanding. WikiText-2 \cite{wikitext} serves as the primary benchmark for measuring language modeling capability through perplexity computation \cite{perplexity}, while TriviaQA \cite{triviaqa} evaluates both reading comprehension and factual knowledge through question-answering tasks.
+The evaluation system employs two distinct benchmarking datasets to assess model performance across different dimensions of language understanding. WikiText-2 \cite{wikitext} serves as the primary benchmark for measuring language modeling capability through perplexity computation \cite{perplexity}, while TriviaQA \cite{triviaqa} evaluates both reading comprehension and factual knowledge through question-answering tasks.
 
 The implementation leverages a custom evaluation framework which automatically detects model types and applies appropriate loading procedures.
 
@@ -253,4 +251,4 @@ The final verification stage implements fuzzy matching for cases where neither e
 \text{Fuzzy Match} = \frac{|\text{Words}_{\text{generated}} \cap \text{Words}_{\text{correct}}|}{|\text{Words}_{\text{correct}}|} \geq 0.8
 \end{equation}
 
-Generation parameters are carefully controlled to ensure consistent evaluation conditions. Models generate between 1 and 50 tokens per answer using deterministic decoding (with temperature set to 1.0) to mitigate randomness that could affect reproducibility. The evaluation framework processes 1200 samples of TriviaQA's validation split (alternatively, the quantity of samples can be tuned by the user), and the accuracy is computed separately for these two tasks.
+Generation parameters are carefully set up to ensure consistent evaluation conditions. Models generate between 1 and 50 tokens per answer using deterministic decoding (with temperature set to 1.0) to mitigate randomness that could affect reproducibility. The evaluation framework processes 1200 samples of TriviaQA's validation split (alternatively, the quantity of samples can be tuned by the user), and the accuracy is computed separately for these two tasks.
