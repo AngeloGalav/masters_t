@@ -14,7 +14,7 @@ The experimental evaluation demonstrates that integrating multiple optimization 
 ## Repository Structure
 
 ### Main Thesis
-The document is structured across five chapters:
+The compiled document can be found at the root of this repository (`tesi.pdf`), and is structured across five chapters:
 
 - **Chapter 1: Introduction** - Examines the environmental and social impacts of large-scale language models, establishing the motivations and objectives for this research.
 
